@@ -1,0 +1,722 @@
+{
+  "code": "ДЯ-04",
+  "name": "Диван №4 кровать пер Мечты",
+  "folder": "ДЯ-04 Диван с ящиками",
+  "createdAt": 1792633983634,
+  "parts": {
+    "7htn47pr": {
+      "no": "ДЯ-04-Ф-001",
+      "partId": "7htn47pr",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "vpmo78k0": {
+      "no": "ДЯ-04-Ф-002",
+      "partId": "vpmo78k0",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "xnylxn16": {
+      "no": "ДЯ-04-Ф-003",
+      "partId": "xnylxn16",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "bar1": {
+      "no": "ДЯ-04-Б-001",
+      "partId": "bar1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "bar2": {
+      "no": "ДЯ-04-Б-002",
+      "partId": "bar2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "sbar1": {
+      "no": "ДЯ-04-Б-003",
+      "partId": "sbar1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "sbar2": {
+      "no": "ДЯ-04-Б-004",
+      "partId": "sbar2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "cbar": {
+      "no": "ДЯ-04-Б-005",
+      "partId": "cbar",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "lbar1": {
+      "no": "ДЯ-04-Ф-004",
+      "partId": "lbar1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "lbar2": {
+      "no": "ДЯ-04-Ф-005",
+      "partId": "lbar2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "xbar1": {
+      "no": "ДЯ-04-Б-006",
+      "partId": "xbar1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "xbar2": {
+      "no": "ДЯ-04-Б-007",
+      "partId": "xbar2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "frail1": {
+      "no": "ДЯ-04-Б-008",
+      "partId": "frail1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "frail2": {
+      "no": "ДЯ-04-Б-009",
+      "partId": "frail2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "wks43t0i": {
+      "no": "ДЯ-04-Ф-006",
+      "partId": "wks43t0i",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "jbu6tsud": {
+      "no": "ДЯ-04-Ф-007",
+      "partId": "jbu6tsud",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "sexohs0t": {
+      "no": "ДЯ-04-Ф-008",
+      "partId": "sexohs0t",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "qy3g2tog": {
+      "no": "ДЯ-04-Ф-009",
+      "partId": "qy3g2tog",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "9cptz2cj": {
+      "no": "ДЯ-04-Ф-010",
+      "partId": "9cptz2cj",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "p40z6yot": {
+      "no": "ДЯ-04-Ф-011",
+      "partId": "p40z6yot",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "z31jghh3": {
+      "no": "ДЯ-04-Ф-012",
+      "partId": "z31jghh3",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "7d9b0dje": {
+      "no": "ДЯ-04-Ф-013",
+      "partId": "7d9b0dje",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "mkc54clt": {
+      "no": "ДЯ-04-Ф-014",
+      "partId": "mkc54clt",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "smb9f9y7": {
+      "no": "ДЯ-04-Ф-015",
+      "partId": "smb9f9y7",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "1l359js2": {
+      "no": "ДЯ-04-Ф-016",
+      "partId": "1l359js2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "eiy9vkyo": {
+      "no": "ДЯ-04-Ф-017",
+      "partId": "eiy9vkyo",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "kfvrdbdi": {
+      "no": "ДЯ-04-Ф-018",
+      "partId": "kfvrdbdi",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "a5u03cg9": {
+      "no": "ДЯ-04-Ф-019",
+      "partId": "a5u03cg9",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "83wfykjs": {
+      "no": "ДЯ-04-Ф-020",
+      "partId": "83wfykjs",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "qj7x8gsf": {
+      "no": "ДЯ-04-Ф-021",
+      "partId": "qj7x8gsf",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "3q0jwc1p": {
+      "no": "ДЯ-04-Ф-022",
+      "partId": "3q0jwc1p",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "a660z4os": {
+      "no": "ДЯ-04-Ф-023",
+      "partId": "a660z4os",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "gwwnpv9q": {
+      "no": "ДЯ-04-Ф-024",
+      "partId": "gwwnpv9q",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "fjgodsem": {
+      "no": "ДЯ-04-Ф-025",
+      "partId": "fjgodsem",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "s12eql1x": {
+      "no": "ДЯ-04-Ф-026",
+      "partId": "s12eql1x",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "cfnjxq6q": {
+      "no": "ДЯ-04-Ф-027",
+      "partId": "cfnjxq6q",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "mnbp9y9d": {
+      "no": "ДЯ-04-Б-010",
+      "partId": "mnbp9y9d",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "14sdvblv": {
+      "no": "ДЯ-04-Б-011",
+      "partId": "14sdvblv",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "vlb5ofe2": {
+      "no": "ДЯ-04-Б-012",
+      "partId": "vlb5ofe2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "3s832lxk": {
+      "no": "ДЯ-04-Б-013",
+      "partId": "3s832lxk",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "3c4wawnu": {
+      "no": "ДЯ-04-Б-014",
+      "partId": "3c4wawnu",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "8fh4tboc": {
+      "no": "ДЯ-04-Б-015",
+      "partId": "8fh4tboc",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "mjcwfub0": {
+      "no": "ДЯ-04-Б-016",
+      "partId": "mjcwfub0",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "lc6r6aau": {
+      "no": "ДЯ-04-Б-017",
+      "partId": "lc6r6aau",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "ddht7rme": {
+      "no": "ДЯ-04-Б-018",
+      "partId": "ddht7rme",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "bbutcul2": {
+      "no": "ДЯ-04-Б-019",
+      "partId": "bbutcul2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "xm8ncigv": {
+      "no": "ДЯ-04-Б-020",
+      "partId": "xm8ncigv",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "2xjufcef": {
+      "no": "ДЯ-04-Б-021",
+      "partId": "2xjufcef",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "od3p2weu": {
+      "no": "ДЯ-04-Б-022",
+      "partId": "od3p2weu",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "vsathp73": {
+      "no": "ДЯ-04-Б-023",
+      "partId": "vsathp73",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "8e3947zl": {
+      "no": "ДЯ-04-Б-024",
+      "partId": "8e3947zl",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "rmotc8e4": {
+      "no": "ДЯ-04-Б-025",
+      "partId": "rmotc8e4",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "9crndbgu": {
+      "no": "ДЯ-04-Ф-028",
+      "partId": "9crndbgu",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "sfq0mhpd": {
+      "no": "ДЯ-04-Ф-029",
+      "partId": "sfq0mhpd",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zji522if": {
+      "no": "ДЯ-04-Ф-030",
+      "partId": "zji522if",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "qzkrb26l": {
+      "no": "ДЯ-04-Ф-031",
+      "partId": "qzkrb26l",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zk1": {
+      "no": "ДЯ-04-М-001",
+      "partId": "zk1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zk2": {
+      "no": "ДЯ-04-М-002",
+      "partId": "zk2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zk3": {
+      "no": "ДЯ-04-М-003",
+      "partId": "zk3",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zk4": {
+      "no": "ДЯ-04-М-004",
+      "partId": "zk4",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zk5": {
+      "no": "ДЯ-04-М-005",
+      "partId": "zk5",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zk6": {
+      "no": "ДЯ-04-М-006",
+      "partId": "zk6",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zk7": {
+      "no": "ДЯ-04-М-007",
+      "partId": "zk7",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zk8": {
+      "no": "ДЯ-04-М-008",
+      "partId": "zk8",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zsL1": {
+      "no": "ДЯ-04-М-009",
+      "partId": "zsL1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zsL2": {
+      "no": "ДЯ-04-М-010",
+      "partId": "zsL2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zsL3": {
+      "no": "ДЯ-04-М-011",
+      "partId": "zsL3",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zsL4": {
+      "no": "ДЯ-04-М-012",
+      "partId": "zsL4",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zsR1": {
+      "no": "ДЯ-04-М-013",
+      "partId": "zsR1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zsR2": {
+      "no": "ДЯ-04-М-014",
+      "partId": "zsR2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zsR3": {
+      "no": "ДЯ-04-М-015",
+      "partId": "zsR3",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "zsR4": {
+      "no": "ДЯ-04-М-016",
+      "partId": "zsR4",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLr1": {
+      "no": "ДЯ-04-Ф-032",
+      "partId": "armLr1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLr2": {
+      "no": "ДЯ-04-Ф-033",
+      "partId": "armLr2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLr3": {
+      "no": "ДЯ-04-Ф-034",
+      "partId": "armLr3",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLr4": {
+      "no": "ДЯ-04-Ф-035",
+      "partId": "armLr4",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLr5": {
+      "no": "ДЯ-04-Ф-036",
+      "partId": "armLr5",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLr6": {
+      "no": "ДЯ-04-Ф-037",
+      "partId": "armLr6",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLr7": {
+      "no": "ДЯ-04-Ф-038",
+      "partId": "armLr7",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLr8": {
+      "no": "ДЯ-04-Ф-039",
+      "partId": "armLr8",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLi1": {
+      "no": "ДЯ-04-Ф-040",
+      "partId": "armLi1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLi2": {
+      "no": "ДЯ-04-Ф-041",
+      "partId": "armLi2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLs1": {
+      "no": "ДЯ-04-Ф-042",
+      "partId": "armLs1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLs2": {
+      "no": "ДЯ-04-Ф-043",
+      "partId": "armLs2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLs3": {
+      "no": "ДЯ-04-Ф-044",
+      "partId": "armLs3",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLs4": {
+      "no": "ДЯ-04-Ф-045",
+      "partId": "armLs4",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armLs5": {
+      "no": "ДЯ-04-Ф-046",
+      "partId": "armLs5",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRr1": {
+      "no": "ДЯ-04-Ф-047",
+      "partId": "armRr1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRr2": {
+      "no": "ДЯ-04-Ф-048",
+      "partId": "armRr2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRr3": {
+      "no": "ДЯ-04-Ф-049",
+      "partId": "armRr3",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRr4": {
+      "no": "ДЯ-04-Ф-050",
+      "partId": "armRr4",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRr5": {
+      "no": "ДЯ-04-Ф-051",
+      "partId": "armRr5",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRr6": {
+      "no": "ДЯ-04-Ф-052",
+      "partId": "armRr6",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRr7": {
+      "no": "ДЯ-04-Ф-053",
+      "partId": "armRr7",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRr8": {
+      "no": "ДЯ-04-Ф-054",
+      "partId": "armRr8",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRi1": {
+      "no": "ДЯ-04-Ф-055",
+      "partId": "armRi1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRi2": {
+      "no": "ДЯ-04-Ф-056",
+      "partId": "armRi2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRs1": {
+      "no": "ДЯ-04-Ф-057",
+      "partId": "armRs1",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRs2": {
+      "no": "ДЯ-04-Ф-058",
+      "partId": "armRs2",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRs3": {
+      "no": "ДЯ-04-Ф-059",
+      "partId": "armRs3",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRs4": {
+      "no": "ДЯ-04-Ф-060",
+      "partId": "armRs4",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    },
+    "armRs5": {
+      "no": "ДЯ-04-Ф-061",
+      "partId": "armRs5",
+      "status": "none",
+      "rev": 0,
+      "history": []
+    }
+  }
+}

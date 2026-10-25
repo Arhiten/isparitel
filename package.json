@@ -1,0 +1,29 @@
+{
+  "name": "ceramic-molds",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Фото + габариты → STL для оснастки: мастер-модель → гипсовая форма → силиконовый кейс → печатный кожух",
+  "scripts": {
+    "dev": "next dev -p 3043",
+    "build": "next build",
+    "start": "next start -p 3043",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx scripts/test-pipeline.ts && tsx scripts/test-planning.ts && tsx scripts/test-build.ts"
+  },
+  "dependencies": {
+    "@mlightcad/libredwg-web": "^0.7.15",
+    "@types/three": "^0.186.0",
+    "manifold-3d": "3.5.1",
+    "next": "^15.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}
