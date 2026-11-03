@@ -14,6 +14,7 @@ import { type SeriesId, units } from "./series";
 import { Cancelled, type Layout, computeLayout } from "./layout";
 import KmSheet from "./KmSheet";
 import { JIG_ROLES, type JigRole, evaporatorJig } from "./evaporatorJig";
+import { FRAME_MATERIALS, type MarkKind, frameMarks } from "./evaporatorMarks";
 import Labels from "./Labels";
 import { bendSkins } from "./skins";
 import { DEFAULT_RAILS, FIRST, checkRails, railLimits } from "./evaporator";
@@ -22,7 +23,7 @@ import type { Model } from "./SofaViewer";
 const SofaViewer = dynamic(() => import("./SofaViewer"), { ssr: false, loading: () => <div className="viewer-stub">Загрузка модели…</div> });
 
 type Tab = { kind: "home" } | { kind: "unit"; code: string } | { kind: "order" } | { kind: "purchase" };
-type Sheet = "model" | "explode" | "cut" | "spec" | "labels" | "notes" | "mount" | "km" | "jig";
+type Sheet = "model" | "frame" | "explode" | "cut" | "spec" | "labels" | "notes" | "mount" | "km" | "jig";
 
 const date = (t: number) => new Date(t).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
 
@@ -335,6 +336,9 @@ function UnitView({ fleet, unit, run }: { fleet: Fleet; unit: Unit; run: Run }) 
   const [kind, setKind] = useState<Kind>(() => kindsIn(fleet)[0] ?? "plywood");
   const [picked, setPicked] = useState<string | null>(null);
   const [explode, setExplode] = useState(0.6);
+  // Лист 1: наружная обшивка (детали ghost) — непрозрачная, как снаружи; галочкой — полупрозрачная, чтобы видеть каркас.
+  const [solidSkin, setSolidSkin] = useState(true);
+  const hasSkin = useMemo(() => fleet.base.parts.some((p) => p.ghost), [fleet.base]);
   const colors = useMemo(() => colorsOf(fleet.base, unit), [fleet.base, unit]);
   const rows = useMemo(() => numbering(fleet.base), [fleet.base]);
   // Счёт по видам — по деталям экземпляра: без неизготавливаемых, с деталями сверх модели.
@@ -383,6 +387,8 @@ function UnitView({ fleet, unit, run }: { fleet: Fleet; unit: Unit; run: Run }) 
         {(
           [
             ["model", "Лист 1 · Модель"],
+            // Несущий каркас отдельно — у шкафа испарителя (марки каркаса из его модели).
+            ...(fleet.series.id === "evaporator" ? ([["frame", "Модель несущего каркаса"]] as const) : []),
             ["explode", "Лист 2 · Взрыв-схема"],
             ["cut", "Лист 3 · Раскрой и спецификация"],
             ["spec", "Спецификация"],
@@ -399,7 +405,20 @@ function UnitView({ fleet, unit, run }: { fleet: Fleet; unit: Unit; run: Run }) 
           </button>
         ))}
       </div>
-      {sheet === "model" && <SofaViewer calc={model} colors={colors} />}
+      {sheet === "model" && (
+        <>
+          {hasSkin && (
+            <div className="explode-bar">
+              <label>
+                <input type="checkbox" checked={solidSkin} onChange={(e) => setSolidSkin(e.target.checked)} /> Наружная обшивка — непрозрачная
+              </label>
+              <span className="muted small">Снимите галочку, чтобы видеть каркас и утеплитель за обшивкой.</span>
+            </div>
+          )}
+          <SofaViewer calc={model} colors={colors} solidSkin={solidSkin} />
+        </>
+      )}
+      {sheet === "frame" && <FrameView fleet={fleet} model={model} />}
       {sheet === "explode" && (
         <>
           <div className="explode-bar">
@@ -431,10 +450,98 @@ function UnitView({ fleet, unit, run }: { fleet: Fleet; unit: Unit; run: Run }) 
  * Шкаф испарителя: объёмная схема сварочного кондуктора — каркас (основание, косынки, стойки, верхний пояс) в кондукторе.
  * Детали кондуктора окрашены по роли (легенда), каркас — голубым; ниже — порядок работы в кондукторе.
  */
+/** Цвет детали каркаса по виду марки. */
+const FRAME_COLORS: Record<MarkKind, string> = { channel: "#4dabf7", tube: "#1c7ed6", angle: "#2f9e44", plate: "#ffa94d", bar: "#e03131" };
+/** Каркас створок двери — на модели каркаса отдельным цветом. */
+const DOOR_FRAME_COLOR = "#9c36b5";
+const FRAME_KIND_TITLE: Record<MarkKind, string> = { channel: "Швеллеры основания", tube: "Стойки и трубы пояса", angle: "Перемычки (уголок)", plate: "Листовые детали", bar: "Бобышки" };
+
+/**
+ * Модель несущего каркаса шкафа испарителя: только детали каркаса (без обшивки, кассет, полос-вставок и утеплителя),
+ * цвет — по виду марки; щелчок по детали — её марка в ведомости ниже. Марки — те же, что на листах КМ 7–10.
+ */
+function FrameView({ fleet, model }: { fleet: Fleet; model: Model }) {
+  const marks = useMemo(() => frameMarks(fleet.base), [fleet.base]);
+  const [picked, setPicked] = useState<string | null>(null);
+  const [explode, setExplode] = useState(0);
+  const { frame, colors, markOf } = useMemo(() => {
+    // Каркас створок двери (брусок, стойка у петель, диафрагмы) — тоже, отдельным цветом; в ведомость каркаса шкафа не входит.
+    const doorFrame = (id: string) => /^door-(stile|hstile|dia)-/.test(id);
+    const solids = model.solids.filter((s) => FRAME_MATERIALS.includes(s.material.id) || doorFrame(s.part.id));
+    const size = [0, 1, 2].map((k) => Math.max(...solids.map((s) => s.max[k])) - Math.min(...solids.map((s) => s.min[k]))) as V;
+    const markOf: Record<string, string> = {}, colors: Record<string, string> = {};
+    for (const m of marks)
+      for (const id of m.ids) {
+        markOf[id] = m.mark;
+        colors[id] = FRAME_COLORS[m.kind];
+      }
+    for (const s of solids) if (doorFrame(s.part.id)) colors[s.part.id] = DOOR_FRAME_COLOR;
+    return { frame: { solids, size } as Model, colors, markOf };
+  }, [model, marks]);
+  const mark = picked ? markOf[picked] : null;
+  const total = marks.reduce((sum, m) => sum + m.mass * m.qty, 0);
+  return (
+    <div className="notes-sheet">
+      <div className="explode-bar">
+        <label>
+          Разлёт
+          <input type="range" min={0} max={1.5} step={0.05} value={explode} onChange={(e) => setExplode(+e.target.value)} />
+        </label>
+        <span className="muted small">
+          Каркас без обшивки и утеплителя: деталей — {marks.reduce((n, m) => n + m.qty, 0)}, марок — {marks.length}, масса ≈ {num(total, 1)} кг. Щёлкните по детали — её марка выделится в ведомости.
+        </span>
+      </div>
+      <SofaViewer calc={frame} colors={colors} explode={explode} onPick={setPicked} picked={picked} height={560} solidSkin />
+      <div className="legend" style={{ marginTop: 10 }}>
+        {(Object.keys(FRAME_COLORS) as MarkKind[]).map((k) => (
+          <span key={k} className="legend-item">
+            <i style={{ background: FRAME_COLORS[k] }} />
+            {FRAME_KIND_TITLE[k]}
+          </span>
+        ))}
+        <span className="legend-item" title="Брусок притвора 50×50, стойка у петель 40×20, диафрагмы −3; в ведомость каркаса шкафа не входит">
+          <i style={{ background: DOOR_FRAME_COLOR }} />
+          Каркас створок двери
+        </span>
+      </div>
+      <h2 className="notes-head">Ведомость элементов каркаса</h2>
+      <table className="spec">
+        <thead>
+          <tr>
+            <th>Марка</th>
+            <th>Наименование</th>
+            <th>Материал</th>
+            <th>Кол.</th>
+            <th>Масса 1, кг</th>
+            <th>Всего, кг</th>
+            <th>Лист КМ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {marks.map((m) => (
+            <tr key={m.mark} className={m.mark === mark ? "picked" : ""} style={m.mark === mark ? { background: "#fff3bf" } : undefined} onClick={() => setPicked(m.ids[0])}>
+              <td>
+                <i className="swatch" style={{ display: "inline-block", width: 10, height: 10, marginRight: 6, background: FRAME_COLORS[m.kind] }} />
+                {m.mark}
+              </td>
+              <td>{m.name}</td>
+              <td className="muted small">{m.kind === "plate" ? `лист −${m.t}` : m.material}</td>
+              <td>{m.qty}</td>
+              <td>{num(m.mass, 2)}</td>
+              <td>{num(m.mass * m.qty, 1)}</td>
+              <td>{m.sheet}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function JigView({ fleet }: { fleet: Fleet }) {
   const { model, colors, counts } = useMemo(() => {
     const jig = evaporatorJig(fleet.base);
-    const frame = fleet.base.parts.filter((p) => /^(ch10|ch8|tube60|s8|s3)$/.test(p.materialId));
+    const frame = fleet.base.parts.filter((p) => /^(ch10|ch8|tube60|an50|s8|s3)$/.test(p.materialId));
     const state: AppState = { ...fleet.base, parts: [...frame, ...jig.parts], materials: [...fleet.base.materials, ...jig.materials] };
     const colors: Record<string, string> = {};
     for (const p of frame) colors[p.id] = "#74c0fc";

@@ -298,20 +298,6 @@
         }
       ]
     },
-    "top-left-1": {
-      "no": "ШИ-01-М-025",
-      "partId": "top-left-1",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792905117038,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
     "top-left-2": {
       "no": "ШИ-01-М-026",
       "partId": "top-left-2",
@@ -329,20 +315,6 @@
     "top-left-3": {
       "no": "ШИ-01-М-027",
       "partId": "top-left-3",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792905117038,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "top-right-1": {
-      "no": "ШИ-01-М-028",
-      "partId": "top-right-1",
       "status": "none",
       "rev": 0,
       "history": [
@@ -438,37 +410,9 @@
         }
       ]
     },
-    "cap-left-f": {
-      "no": "ШИ-01-М-035",
-      "partId": "cap-left-f",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792905117038,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
     "cap-left-b": {
       "no": "ШИ-01-М-036",
       "partId": "cap-left-b",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792905117038,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "cap-right-f": {
-      "no": "ШИ-01-М-037",
-      "partId": "cap-right-f",
       "status": "none",
       "rev": 0,
       "history": [
@@ -488,174 +432,6 @@
       "history": [
         {
           "at": 1792905117038,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "post2-fl": {
-      "no": "ШИ-01-М-014",
-      "partId": "post2-fl",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792911584677,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "strip-fl-1": {
-      "no": "ШИ-01-М-015",
-      "partId": "strip-fl-1",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792911584677,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "strip-fl-2": {
-      "no": "ШИ-01-М-016",
-      "partId": "strip-fl-2",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792911584677,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "cassette-fl": {
-      "no": "ШИ-01-М-017",
-      "partId": "cassette-fl",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792911584677,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "lid-fl-b": {
-      "no": "ШИ-01-М-018",
-      "partId": "lid-fl-b",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792911584677,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "lid-fl-t": {
-      "no": "ШИ-01-М-019",
-      "partId": "lid-fl-t",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792911584677,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "post2-fr": {
-      "no": "ШИ-01-М-023",
-      "partId": "post2-fr",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792911584677,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "strip-fr-1": {
-      "no": "ШИ-01-М-024",
-      "partId": "strip-fr-1",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792911584677,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "strip-fr-2": {
-      "no": "ШИ-01-М-025",
-      "partId": "strip-fr-2",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792911584677,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "cassette-fr": {
-      "no": "ШИ-01-М-026",
-      "partId": "cassette-fr",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792911584677,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "lid-fr-b": {
-      "no": "ШИ-01-М-027",
-      "partId": "lid-fr-b",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792911584677,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "lid-fr-t": {
-      "no": "ШИ-01-М-028",
-      "partId": "lid-fr-t",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792911584677,
           "status": "none",
           "rev": 0,
           "comment": "Деталь добавлена в модель серии"
@@ -830,34 +606,6 @@
         }
       ]
     },
-    "stay-fl-inner": {
-      "no": "ШИ-01-М-013",
-      "partId": "stay-fl-inner",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792925428475,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "stay-fr-inner": {
-      "no": "ШИ-01-М-023",
-      "partId": "stay-fr-inner",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792925428475,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
     "stay-bl-inner": {
       "no": "ШИ-01-М-033",
       "partId": "stay-bl-inner",
@@ -886,20 +634,6 @@
         }
       ]
     },
-    "stayT-fl-corner": {
-      "no": "ШИ-01-М-014",
-      "partId": "stayT-fl-corner",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792928757238,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
     "stayT-fl-cantilever": {
       "no": "ШИ-01-М-015",
       "partId": "stayT-fl-cantilever",
@@ -914,51 +648,9 @@
         }
       ]
     },
-    "stayT-fl-inner": {
-      "no": "ШИ-01-М-016",
-      "partId": "stayT-fl-inner",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792928757238,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "stayT-fr-corner": {
-      "no": "ШИ-01-М-027",
-      "partId": "stayT-fr-corner",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792928757238,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
     "stayT-fr-cantilever": {
       "no": "ШИ-01-М-028",
       "partId": "stayT-fr-cantilever",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792928757238,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "stayT-fr-inner": {
-      "no": "ШИ-01-М-029",
-      "partId": "stayT-fr-inner",
       "status": "none",
       "rev": 0,
       "history": [
@@ -1054,20 +746,6 @@
         }
       ]
     },
-    "panel-front": {
-      "no": "ШИ-01-М-079",
-      "partId": "panel-front",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792928757238,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
     "panel-back": {
       "no": "ШИ-01-М-080",
       "partId": "panel-back",
@@ -1099,20 +777,6 @@
     "panel-right": {
       "no": "ШИ-01-М-082",
       "partId": "panel-right",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792928757238,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "plinth-front": {
-      "no": "ШИ-01-М-083",
-      "partId": "plinth-front",
       "status": "none",
       "rev": 0,
       "history": [
@@ -1166,34 +830,6 @@
         }
       ]
     },
-    "plinth-r-fl": {
-      "no": "ШИ-01-М-087",
-      "partId": "plinth-r-fl",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792928757238,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "plinth-r-fr": {
-      "no": "ШИ-01-М-088",
-      "partId": "plinth-r-fr",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792928757238,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
     "plinth-r-br": {
       "no": "ШИ-01-М-089",
       "partId": "plinth-r-br",
@@ -1216,20 +852,6 @@
       "history": [
         {
           "at": 1792928757238,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "band-b-front": {
-      "no": "ШИ-01-М-079",
-      "partId": "band-b-front",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792929801691,
           "status": "none",
           "rev": 0,
           "comment": "Деталь добавлена в модель серии"
@@ -1267,20 +889,6 @@
     "band-b-right": {
       "no": "ШИ-01-М-082",
       "partId": "band-b-right",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792929801691,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "band-t-front": {
-      "no": "ШИ-01-М-083",
-      "partId": "band-t-front",
       "status": "none",
       "rev": 0,
       "history": [
@@ -1334,20 +942,6 @@
         }
       ]
     },
-    "pgus-fl-1": {
-      "no": "ШИ-01-М-019",
-      "partId": "pgus-fl-1",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792930016507,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
     "pgus-fl-2": {
       "no": "ШИ-01-М-020",
       "partId": "pgus-fl-2",
@@ -1362,79 +956,9 @@
         }
       ]
     },
-    "pgus2-fl-1": {
-      "no": "ШИ-01-М-021",
-      "partId": "pgus2-fl-1",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792930016507,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "pgus2-fl-2": {
-      "no": "ШИ-01-М-022",
-      "partId": "pgus2-fl-2",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792930016507,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "pgus-fr-1": {
-      "no": "ШИ-01-М-036",
-      "partId": "pgus-fr-1",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792930016507,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
     "pgus-fr-2": {
       "no": "ШИ-01-М-037",
       "partId": "pgus-fr-2",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792930016507,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "pgus2-fr-1": {
-      "no": "ШИ-01-М-038",
-      "partId": "pgus2-fr-1",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792930016507,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "pgus2-fr-2": {
-      "no": "ШИ-01-М-039",
-      "partId": "pgus2-fr-2",
       "status": "none",
       "rev": 0,
       "history": [
@@ -1684,62 +1208,6 @@
         }
       ]
     },
-    "wool-fl-1": {
-      "no": "ШИ-01-У-001",
-      "partId": "wool-fl-1",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792941262934,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "wool-fl-2": {
-      "no": "ШИ-01-У-002",
-      "partId": "wool-fl-2",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792941262934,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "wool-fr-1": {
-      "no": "ШИ-01-У-003",
-      "partId": "wool-fr-1",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792941262934,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "wool-fr-2": {
-      "no": "ШИ-01-У-004",
-      "partId": "wool-fr-2",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792941262934,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
     "wool-bl-1": {
       "no": "ШИ-01-У-005",
       "partId": "wool-bl-1",
@@ -1796,20 +1264,6 @@
         }
       ]
     },
-    "wool-front-1": {
-      "no": "ШИ-01-У-009",
-      "partId": "wool-front-1",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792941262934,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
     "wool-back-1": {
       "no": "ШИ-01-У-010",
       "partId": "wool-back-1",
@@ -1841,20 +1295,6 @@
     "wool-right-1": {
       "no": "ШИ-01-У-012",
       "partId": "wool-right-1",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1792941262934,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "wool-front-2": {
-      "no": "ШИ-01-У-013",
-      "partId": "wool-front-2",
       "status": "none",
       "rev": 0,
       "history": [
@@ -1902,6 +1342,454 @@
       "history": [
         {
           "at": 1792941262934,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "bar-back-1": {
+      "no": "ШИ-01-М-117",
+      "partId": "bar-back-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793623543770,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "bar-left-1": {
+      "no": "ШИ-01-М-118",
+      "partId": "bar-left-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793623543770,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "bar-right-1": {
+      "no": "ШИ-01-М-119",
+      "partId": "bar-right-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793623543770,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "icas-bl": {
+      "no": "ШИ-01-М-068",
+      "partId": "icas-bl",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793626486831,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "istrip-bl-1": {
+      "no": "ШИ-01-М-069",
+      "partId": "istrip-bl-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793626486831,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "istrip-bl-2": {
+      "no": "ШИ-01-М-070",
+      "partId": "istrip-bl-2",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793626486831,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "icas-br": {
+      "no": "ШИ-01-М-088",
+      "partId": "icas-br",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793626486831,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "istrip-br-1": {
+      "no": "ШИ-01-М-089",
+      "partId": "istrip-br-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793626486831,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "istrip-br-2": {
+      "no": "ШИ-01-М-090",
+      "partId": "istrip-br-2",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793626486831,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "ipanel-back": {
+      "no": "ШИ-01-М-133",
+      "partId": "ipanel-back",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793626486831,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "ipanel-left": {
+      "no": "ШИ-01-М-134",
+      "partId": "ipanel-left",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793626486831,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "ipanel-right": {
+      "no": "ШИ-01-М-135",
+      "partId": "ipanel-right",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793626486831,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "fstrip-l": {
+      "no": "ШИ-01-М-070",
+      "partId": "fstrip-l",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793627933804,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "fstrip-r": {
+      "no": "ШИ-01-М-076",
+      "partId": "fstrip-r",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793627933804,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-l": {
+      "no": "ШИ-01-М-063",
+      "partId": "door-l",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628346944,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-in-l": {
+      "no": "ШИ-01-М-064",
+      "partId": "door-in-l",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628346944,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-stile-l": {
+      "no": "ШИ-01-М-065",
+      "partId": "door-stile-l",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628346944,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-wool-l-1": {
+      "no": "ШИ-01-У-005",
+      "partId": "door-wool-l-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628346944,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-wool-l-2": {
+      "no": "ШИ-01-У-006",
+      "partId": "door-wool-l-2",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628346944,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-r": {
+      "no": "ШИ-01-М-067",
+      "partId": "door-r",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628346944,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-in-r": {
+      "no": "ШИ-01-М-068",
+      "partId": "door-in-r",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628346944,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-stile-r": {
+      "no": "ШИ-01-М-069",
+      "partId": "door-stile-r",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628346944,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-wool-r-1": {
+      "no": "ШИ-01-У-007",
+      "partId": "door-wool-r-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628346944,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-wool-r-2": {
+      "no": "ШИ-01-У-008",
+      "partId": "door-wool-r-2",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628346944,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-hstile-l": {
+      "no": "ШИ-01-М-066",
+      "partId": "door-hstile-l",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628976838,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-dia-l-1": {
+      "no": "ШИ-01-М-067",
+      "partId": "door-dia-l-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628976838,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-dia-l-2": {
+      "no": "ШИ-01-М-068",
+      "partId": "door-dia-l-2",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628976838,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-dia-l-3": {
+      "no": "ШИ-01-М-069",
+      "partId": "door-dia-l-3",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628976838,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-hstile-r": {
+      "no": "ШИ-01-М-074",
+      "partId": "door-hstile-r",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628976838,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-dia-r-1": {
+      "no": "ШИ-01-М-075",
+      "partId": "door-dia-r-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628976838,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-dia-r-2": {
+      "no": "ШИ-01-М-076",
+      "partId": "door-dia-r-2",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628976838,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-dia-r-3": {
+      "no": "ШИ-01-М-077",
+      "partId": "door-dia-r-3",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793628976838,
           "status": "none",
           "rev": 0,
           "comment": "Деталь добавлена в модель серии"

@@ -1,11 +1,11 @@
 // Марки несущего каркаса шкафа испарителя для листов КМ: одинаковые детали — одна марка. Чистый TS.
-// Профили — по правилам (Ш1–Ш3 как на листе 4, стойки С1, трубы пояса Т1–Т3, бобышка Б1);
+// Профили — по правилам (Ш1–Ш3 как на листе 4, стойки С1, трубы пояса Т1–Т3, перемычки стен У1 — уголок, бобышка Б1);
 // листовые детали — по контуру: зеркальные и повёрнутые на 90° экземпляры считаются одной маркой (лист режется на ЧПУ с любой стороны).
 
 import { solidsOf, type Solid } from "./frame/calc";
 import type { AppState, Pt, Shape } from "./frame/model";
 
-export type MarkKind = "channel" | "tube" | "bar" | "plate";
+export type MarkKind = "channel" | "tube" | "angle" | "bar" | "plate";
 export interface FrameMark {
   mark: string;
   kind: MarkKind;
@@ -29,7 +29,7 @@ export interface FrameMark {
 }
 
 /** Материалы несущего каркаса (обшивка, кассеты и полосы-вставки — не каркас). */
-export const FRAME_MATERIALS = ["ch10", "ch8", "tube60", "rd50", "s8", "s3"];
+export const FRAME_MATERIALS = ["ch10", "ch8", "tube60", "tube50", "an50", "rd50", "s8", "s3"];
 
 const RULES: [RegExp, string, MarkKind, string, number][] = [
   [/^base-(front|back)$/, "Ш1", "channel", "Швеллер основания 10П", 4],
@@ -39,6 +39,7 @@ const RULES: [RegExp, string, MarkKind, string, number][] = [
   [/^top-(front|back)$/, "Т1", "tube", "Верхний пояс, связывающая труба", 8],
   [/^top-(left|right)-[13]$/, "Т2", "tube", "Верхний пояс, консоль продольной трубы", 8],
   [/^top-(left|right)-2$/, "Т3", "tube", "Верхний пояс, пролёт продольной трубы", 8],
+  [/^bar-/, "У1", "angle", "Перемычка горизонтальная стены", 8],
   [/^boss-/, "Б1", "bar", "Бобышка ⌀50×25, резьба М20 гл. 20", 8],
 ];
 
@@ -72,7 +73,8 @@ const plain = (name: string) =>
 
 /** Марки каркаса по модели серии. */
 export function frameMarks(base: AppState): FrameMark[] {
-  const solids = solidsOf(base).filter((s) => FRAME_MATERIALS.includes(s.material.id));
+  // Створки двери (door-*) — отдельное изделие, не каркас.
+  const solids = solidsOf(base).filter((s) => FRAME_MATERIALS.includes(s.material.id) && !s.part.id.startsWith("door"));
   const marks = new Map<string, FrameMark>();
   const plates: FrameMark[] = [];
   for (const s of solids) {
@@ -119,6 +121,6 @@ export function frameMarks(base: AppState): FrameMark[] {
       sheet: 9,
     });
   }
-  const order = ["Ш1", "Ш2", "Ш3", "С1", "Т1", "Т2", "Т3", "Б1"];
+  const order = ["Ш1", "Ш2", "Ш3", "С1", "Т1", "Т2", "Т3", "У1", "Б1"];
   return [...order.map((k) => marks.get(k)).filter((m): m is FrameMark => !!m), ...plates];
 }

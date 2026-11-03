@@ -6,7 +6,7 @@
 // Все размеры — из модели серии (cassetteNode), поэтому чертёж меняется вместе с ней.
 
 import { useMemo, useRef, useState } from "react";
-import { cassetteNode, evaporatorBase } from "./evaporator";
+import { cassetteNode, evaporatorBase, pinAxes } from "./evaporator";
 import { solidsOf, type Solid } from "./frame/calc";
 import { frameMarks, type FrameMark } from "./evaporatorMarks";
 import type { Pt } from "./frame/model";
@@ -26,9 +26,12 @@ const wrap = (text: string, width: number, size = TXT) => {
   }
   return lines;
 };
-/** Пакет крепления (выносной элемент Б), мм: бортик заклёпки = лента под полосой, лента полоса/отгиб, шайба EPDM, головка и длина винта, тело заклёпки. */
-/** cut — зазор между двумя полосами ленты (у кромок отгиба 12 мм, ось заклёпки посередине). */
-const STACK = { head: 1.5, headD: 13, tape1: 1.5, cut: 16, tape2: 1, washer: 2, washerD: 12, k: 3.3, dk: 10.5, screw: 25, body: 17, bulge: [3, 6], thread: [9, 17], stripHole: 6.6, flangeHole: 10 };
+/**
+ * Пакет крепления (выносной элемент Б), мм, по «узел обвязки-3.dwg»: бортик заклёпки — в отверстии panelHole бокового отгиба прямой кассеты;
+ * ленты EPDM tape по обе стороны полосы (2 полосы у кромок отгиба, cut — зазор между ними под крепёж);
+ * шайба EPDM, головка и длина винта, тело заклёпки (зона обжатия, резьба), отверстия в полосе и в отгибе угловой кассеты.
+ */
+const STACK = { head: 1.5, headD: 13, panelHole: 13, tape: 1, cut: 16, washer: 2, washerD: 12, k: 3.3, dk: 10.5, screw: 30, body: 17, bulge: [3, 6], thread: [9, 17], stripHole: 6.6, flangeHole: 10 };
 
 /** Число в размере: без лишних нулей, дробь через запятую. */
 const fmt = (n: number) => String(+n.toFixed(1)).replace(".", ",");
@@ -66,11 +69,11 @@ type Pos = (at: [number, number], to: [number, number], num: number) => React.Re
 
 /**
  * Выносной элемент Б (М 2,2:1): разрез по оси крепежа основной стойки. Ось вертикальна, стойка сверху, кассета снизу.
- * d — глубина от наружной грани стойки (в трубу — плюс), u — поперёк оси. Слои: стенка трубы, бортик заклёпки в вырезе ленты 1,5,
- * полоса на бортике, лента 1, отгиб кассеты, шайба EPDM, винт; тело заклёпки с зоной обжатия и резьбы.
+ * d — глубина от наружной грани стойки (в трубу — плюс), u — поперёк оси. Слои вплотную: стенка трубы, боковой отгиб прямой кассеты
+ * (бортик заклёпки — в его отверстии), полоса-вставка, отгиб угловой кассеты, шайба EPDM, винт; тело заклёпки с зоной обжатия и резьбы.
  */
-function DetailB({ hole, wall, strip, flange, dim, pos }: { hole: number; wall: number; strip: number; flange: number; dim: Dim; pos: Pos }) {
-  const S = 2.2, U = 14, DMAX = 20, BX = 314, BY = 140;
+function DetailB({ hole, wall, panel, strip, flange, dim, pos }: { hole: number; wall: number; panel: number; strip: number; flange: number; dim: Dim; pos: Pos }) {
+  const S = 1.7, U = 14, DMAX = 20, BX = 318, BY = 160;
   const Q = (u: number, d: number): [number, number] => [BX + (u + U) * S, BY + (DMAX - d) * S];
   /** Прямоугольник слоя: по ширине u0…u1, по глубине d0…d1. */
   const layer = (u0: number, u1: number, d0: number, d1: number, fill: string, key?: string | number) => {
@@ -85,22 +88,22 @@ function DetailB({ hole, wall, strip, flange, dim, pos }: { hole: number; wall: 
     </>
   );
   // Глубины слоёв от грани стойки наружу (к кассете — минус).
-  const strip0 = -STACK.tape1, strip1 = strip0 - strip, tape2 = strip1 - STACK.tape2, flange1 = tape2 - flange, washer1 = flange1 - STACK.washer, head1 = washer1 - STACK.k;
+  const panel1 = -panel, tape1 = panel1 - STACK.tape, strip1 = tape1 - strip, tape2 = strip1 - STACK.tape, flange1 = tape2 - flange, washer1 = flange1 - STACK.washer, head1 = washer1 - STACK.k;
   return (
     <g>
       <text x={BX} y={BY - 3} fontSize={HEAD} fontWeight="bold">
-        Б (М 2,2:1)
+        Б (М 1,7:1)
       </text>
       {/* Стенка трубы (разрез, штриховка) и полость трубы. */}
       {holed(hole, 0, wall, "url(#hatch)")}
-      {/* Ленты EPDM 1,5 — две полосы 12 у кромок отгиба, между ними зазор под бортик; бортик заклёпки ⌀13 × 1,5 — вровень с лентой. */}
-      {holed(STACK.cut, 0, -STACK.tape1, "#c33")}
-      {layer(-STACK.headD / 2, STACK.headD / 2, 0, -STACK.head, "#bbb")}
-      {/* Полоса-вставка 4 (нержавейка) — на ленте и бортике; отверстие под винт 6,6 (овал вдоль полосы). */}
-      {holed(STACK.stripHole, strip0, strip1, "url(#hatch2)")}
-      {/* Лента EPDM 1 между полосой и отгибом. */}
+      {/* Боковой отгиб прямой кассеты 3 — на грани стойки; в отверстии ⌀13 — бортик заклёпки ⌀13 × 1,5. */}
+      {holed(STACK.panelHole, 0, panel1, "#000")}
+      {layer(-STACK.headD / 2 + 0.3, STACK.headD / 2 - 0.3, 0, -STACK.head, "#bbb")}
+      {/* Полоса-вставка 4 (нержавейка) — на отгибе прямой кассеты; отверстие под винт 6,6 (овал вдоль полосы). */}
+      {holed(STACK.cut, panel1, tape1, "#c33")}
+      {holed(STACK.stripHole, tape1, strip1, "url(#hatch2)")}
       {holed(STACK.cut, strip1, tape2, "#c33")}
-      {/* Отгиб кассеты 3 — отверстие (овал 7×10 поперёк, в разрезе — 10). */}
+      {/* Отгиб угловой кассеты 3 — отверстие (овал 7×10 поперёк, в разрезе — 10). */}
       {holed(STACK.flangeHole, tape2, flange1, "#000")}
       {/* Шайба EPDM и головка винта ISO 7380. */}
       {layer(-STACK.washerD / 2, STACK.washerD / 2, flange1, washer1, "#c33")}
@@ -117,33 +120,32 @@ function DetailB({ hole, wall, strip, flange, dim, pos }: { hole: number; wall: 
       <line x1={Q(0, head1 - 3)[0]} y1={Q(0, head1 - 3)[1]} x2={Q(0, STACK.body + 3)[0]} y2={Q(0, STACK.body + 3)[1]} stroke="#000" strokeWidth={THIN} strokeDasharray="6 1.5 1 1.5" />
       {/* Цепочка толщин слева. */}
       {dim(Q(-U, wall), Q(-U, 0), [-5, 0], fmt(wall), true)}
-      {dim(Q(-U, 0), Q(-U, strip0), [-11, 0], fmt(STACK.tape1), true)}
-      {dim(Q(-U, strip0), Q(-U, strip1), [-5, 0], fmt(strip), true)}
-      {dim(Q(-U, strip1), Q(-U, tape2), [-11, 0], fmt(STACK.tape2), true)}
-      {dim(Q(-U, tape2), Q(-U, flange1), [-5, 0], fmt(flange), true)}
+      {dim(Q(-U, 0), Q(-U, panel1), [-11, 0], fmt(panel), true)}
+      {dim(Q(-U, tape1), Q(-U, strip1), [-5, 0], fmt(strip), true)}
+      {dim(Q(-U, tape2), Q(-U, flange1), [-11, 0], fmt(flange), true)}
       {/* Длина винта и диаметры. */}
       {dim(Q(STACK.dk / 2, washer1), Q(STACK.dk / 2, washer1 + STACK.screw), [16, 0], "М6×" + STACK.screw, true)}
       {dim(Q(-hole / 2, STACK.body), Q(hole / 2, STACK.body), [0, -4], "⌀" + hole)}
-      {dim(Q(-STACK.headD / 2, -STACK.head), Q(STACK.headD / 2, -STACK.head), [0, 0], "")}
-      <text x={Q(STACK.headD / 2 + 1, -STACK.head)[0] + 9} y={Q(0, -STACK.head)[1] + 1} fontSize={TXT}>
-        бортик ⌀{STACK.headD}×{fmt(STACK.head)} = лента
+      <text x={Q(U, 0)[0] + 1} y={Q(0, -STACK.head)[1] + 1} fontSize={TXT}>
+        бортик — в отв. ⌀{STACK.panelHole}
       </text>
       <text x={Q(-U, wall + 4)[0]} y={Q(-U, wall + 4)[1]} fontSize={TXT}>
         стойка (внутри трубы)
       </text>
       {/* Позиции. */}
-      {pos(Q(-U + 2, strip0 - 2), Q(-U - 2, strip0 - 14), 2)}
+      {pos(Q(-U + 2, panel1 + 1), Q(-U - 2, panel1 + 10), 7)}
+      {pos(Q(-U + 2, strip1 + 2), Q(-U - 2, strip1 + 2), 2)}
       {pos(Q(4, STACK.bulge[1]), Q(U + 3, 14), 4)}
       {pos(Q(2, head1 + 1), Q(U + 3, head1 - 2), 5)}
       {pos(Q(-5, washer1 + 1), Q(-U - 2, washer1 - 6), 6)}
-      {pos(Q(10, -0.8), Q(U + 4, 5), 7)}
-      {pos(Q(10, tape2 - 1.5), Q(U + 4, tape2 - 6), 3)}
+      {pos(Q(10, flange1 + 1.5), Q(U + 4, flange1 - 3), 3)}
+      {pos(Q(10, tape1 + 0.5), Q(U + 4, tape1 + 6), 12)}
     </g>
   );
 }
 
 /** Листы комплекта КМ. */
-const SHEETS = ["Монтаж угловой кассеты", "Узел нижнего пояса", "Узел верхнего пояса", "Швеллеры основания", "Привязка и заземление", "Строповка", "Схема каркаса", "Стойки и трубы пояса", "Листовые детали каркаса", "Общие данные"];
+const SHEETS = ["Монтаж угловой кассеты", "Узел нижнего пояса", "Узел верхнего пояса", "Швеллеры основания", "Привязка и заземление", "Строповка", "Схема каркаса", "Стойки и трубы пояса", "Листовые детали каркаса", "Общие данные", "Перемычка и утеплитель", "Дверь. Скрытые петли"];
 
 /** Штамп 185 × 55 в правом нижнем углу листа. */
 function Stamp({ code, title, height, node, sheet, scale }: { code: string; title: string; height: number; node: string; sheet: number; scale: string }) {
@@ -661,7 +663,7 @@ const tag = (at: [number, number], to: [number, number], text: string, key?: str
   </g>
 );
 
-const FILL: Record<string, string> = { channel: "#e4e4e4", tube: "#cfcfcf", bar: "#fff", plate: "#f7f7f7" };
+const FILL: Record<string, string> = { channel: "#e4e4e4", tube: "#cfcfcf", angle: "#dcdcdc", bar: "#fff", plate: "#f7f7f7" };
 
 /**
  * План каркаса (М k): вид сверху на выбранные детали; front — к низу листа. Марки — по одной выноске на марку,
@@ -682,6 +684,11 @@ function FramePlan({ X, Y, k, W, D, items, cut = [] }: { X: number; Y: number; k
           return <circle key={key} cx={P(cx, cy)[0]} cy={P(cx, cy)[1]} r={((s.max[0] - s.min[0]) / 2) * k} fill="#fff" stroke="#000" strokeWidth={THICK} />;
         }
         const fill = cut.includes(m.mark) ? "url(#hatch)" : FILL[m.kind];
+        // Деталь с сечением в плане (повёрнутая стойка проёма) — по её контуру.
+        if (s.part.plan) {
+          const pts = s.part.plan.map(([u, v]) => P(s.part.x + u, s.part.y + v).join(",")).join(" ");
+          return <polygon key={key} points={pts} fill={fill} stroke="#000" strokeWidth={THICK} />;
+        }
         if (s.part.plane === "xy" && s.part.shape) {
           const pts = s.shape.outer.map(([u, v]) => P(s.min[0] + u, s.min[1] + v).join(",")).join(" ");
           return <polygon key={key} points={pts} fill={fill} stroke="#000" strokeWidth={THIN} />;
@@ -705,6 +712,8 @@ function FramePlan({ X, Y, k, W, D, items, cut = [] }: { X: number; Y: number; k
         if (Math.hypot(dx, dy) < 5) [dx, dy] = [-1, 0.3];
         const r = (half + 6 + 6 * (Math.floor(j / 4) % 3)) / Math.max(Math.abs(dx), Math.abs(dy));
         const to: [number, number] = [C[0] + dx * r, C[1] + dy * r];
+        // Не выше строки заголовков видов.
+        to[1] = Math.max(to[1], 23);
         const side = Math.abs(dx) * r > Math.abs(dy) * r - 0.1;
         while (taken.some(([x, y]) => Math.abs(x - to[0]) < 12 && Math.abs(y - to[1]) < 6)) {
           if (side) to[1] += 6;
@@ -737,7 +746,7 @@ function FrameElevation({ X, Y, k, items, along }: { X: number; Y: number; k: nu
 function FrameScheme({ code, title, marks, W, D, H }: { code: string; title: string; marks: FrameMark[]; W: number; D: number; H: number }) {
   const all = itemsOf(marks);
   const zTop = Math.min(...all.filter((i) => i.m.mark === "Т1").map((i) => i.s.min[2]));
-  const low = all.filter(({ s, m }) => s.max[2] <= 101 || m.mark === "С1");
+  const low = all.filter(({ s, m }) => s.max[2] <= 101 || m.mark === "С1" || m.mark === "С2");
   const high = all.filter(({ s }) => s.min[2] >= zTop - 10);
   const k = 0.1, e = 0.05;
   const B = { X: 45, Y: 122 }, T = { X: 175, Y: 122 }, F = { X: 40, Y: 262 }, S = { X: 125, Y: 262 };
@@ -761,7 +770,7 @@ function FrameScheme({ code, title, marks, W, D, H }: { code: string; title: str
       <text x={25} y={16} fontSize={HEAD} fontWeight="bold">
         План основания (М 1:10)
       </text>
-      <FramePlan X={B.X} Y={B.Y} k={k} W={W} D={D} items={low} cut={["С1"]} />
+      <FramePlan X={B.X} Y={B.Y} k={k} W={W} D={D} items={low} cut={["С1", "С2"]} />
       {dim([B.X, B.Y], [B.X + W * k, B.Y], [0, 30], String(W))}
 
       <text x={152} y={16} fontSize={HEAD} fontWeight="bold">
@@ -777,6 +786,7 @@ function FrameScheme({ code, title, marks, W, D, H }: { code: string; title: str
       {pick("С1", 0)([-12, -40])}
       {pick("Т1", 0)([-12, -6])}
       {pick("Ш1", 0)([-12, 8])}
+      {marks.some((m) => m.mark === "У1") && pick("У1", 0)([30, -8])}
       {dim([F.X + W * e, F.Y], [F.X + W * e, F.Y - H * e], [8, 0], String(H), true)}
       {dim([F.X, F.Y], [F.X + W * e, F.Y], [0, 6], String(W))}
 
@@ -784,7 +794,7 @@ function FrameScheme({ code, title, marks, W, D, H }: { code: string; title: str
         Бок, слева (М 1:20)
       </text>
       <FrameElevation X={S.X} Y={S.Y} k={e} items={all} along={1} />
-      {pick("Т2", 1)([-10, -8])}
+      {pick("Т2", 1)([6, -20])}
       {pick("Т3", 1)([8, -10])}
       {pick("Б1", 1)([18, -4])}
       {pick("Ш2", 1)([-10, 8])}
@@ -851,11 +861,11 @@ function TubeFace({ X, Y, k, len, w, holes, extra = [] }: { X: number; Y: number
 function TubesSheet({ code, title, marks, H }: { code: string; title: string; marks: FrameMark[]; H: number }) {
   const n = cassetteNode(), { a: T, s: ts, r: R } = n.tube;
   const by = (mark: string) => marks.find((m) => m.mark === mark)!;
-  const c1 = by("С1"), t1 = by("Т1"), t2 = by("Т2"), t3 = by("Т3"), b1 = by("Б1");
+  const c1 = by("С1"), t1 = by("Т1"), t2 = by("Т2"), t3 = by("Т3"), b1 = by("Б1"), t4 = marks.find((m) => m.mark === "У1");
   // Бобышки на Т3: положение вдоль трубы от её начала.
   const t3s = t3.solids[0], bossAt = by("Б1").solids.map((s) => center(s)).filter((c) => Math.abs(c[0] - center(t3s)[0]) < T).map((c) => c[1] - t3s.min[1]);
   const L = n.site.lift;
-  const rows = [c1, t1, t2, t3, b1];
+  const rows = [c1, t1, t2, t3, ...(t4 ? [t4] : []), b1];
   const notes = [
     `1. Трубы 60×60×${ts} ГОСТ 30245-2003, рез 90°, допуск длины ±1; торцы зачистить от грата.`,
     `2. Отверстия ⌀${n.hole} — на ЧПУ (лазер/сверловка) до сварки, в грани к кассете; привязка — от торца и от наружного ребра.`,
@@ -887,6 +897,11 @@ function TubesSheet({ code, title, marks, H }: { code: string; title: string; ma
         Т3. Пролёт L={fmt(t3.a)} — {t3.qty} шт. (М 1:5)
       </text>
       <TubeFace X={130} Y={152} k={0.2} len={t3.a} w={T} holes={[]} extra={bossAt} />
+      {t4 && (
+        <text x={130} y={177} fontSize={TXT}>
+          У1. Перемычка, уголок 50×50×5 L={fmt(t4.a)} — {t4.qty} шт.; обушок по контуру, полка внизу внутрь
+        </text>
+      )}
       {bossAt.map((u) => (
         <rect key={u} x={130 + (u - L.d / 2) * 0.2} y={152 - T * 0.2 - L.h * 0.2} width={L.d * 0.2} height={L.h * 0.2} fill="url(#hatch2)" stroke="#000" strokeWidth={THICK} />
       ))}
@@ -934,8 +949,8 @@ function TubesSheet({ code, title, marks, H }: { code: string; title: string; ma
         );
       })()}
 
-      <SideText spec={rows.map((m) => [m.mark, `${m.name}, ${m.kind === "bar" ? "круг 50" : `труба 60×60×${ts}`}${m.kind === "bar" ? "" : ` L=${fmt(m.a)}`}`, String(m.qty), `${fmt(m.mass)} кг/шт., всего ${fmt(m.mass * m.qty)} кг`])} notes={notes} />
-      <Stamp code={code} title={title} height={H} node="Стойки и трубы пояса (С1, Т1–Т3, Б1)" sheet={8} scale="1:10; 1:5; 1:2; 1:1" />
+      <SideText spec={rows.map((m) => [m.mark, `${m.name}, ${m.kind === "bar" ? "круг 50" : m.kind === "angle" ? "уголок 50×50×5" : `труба 60×60×${ts}`}${m.kind === "bar" ? "" : ` L=${fmt(m.a)}`}`, String(m.qty), `${fmt(m.mass)} кг/шт., всего ${fmt(m.mass * m.qty)} кг`])} notes={notes} />
+      <Stamp code={code} title={title} height={H} node={`Стойки, трубы и перемычки (С1, Т1–Т3${t4 ? ", У1" : ""}, Б1)`} sheet={8} scale="1:10; 1:5; 1:2; 1:1" />
     </g>
   );
 }
@@ -1133,6 +1148,254 @@ function GeneralSheet({ code, title, marks, H }: { code: string; title: string; 
           ))}
       </g>
       <Stamp code={code} title={title} height={H} node="Общие данные" sheet={10} scale="—" />
+    </g>
+  );
+}
+
+/**
+ * Лист 11: перемычка стены и крепление утеплителя (по принципу ШИУ-01-МК лист 10).
+ * Стена изнутри (М 1:20) — ряды плит, перемычка, шпильки; узел П — вертикальный разрез по перемычке; узел Р — план у стойки.
+ */
+function WoolSheet({ code, title }: { code: string; title: string }) {
+  const n = cassetteNode(), I = n.insul, H = n.height, T = n.tube.a, A = I.angle, Wt = I.wool.t, span = I.span, bar = I.bars[0];
+  const line = (a: [number, number], b: [number, number], w = THICK, dash?: string, key?: string | number) => <line key={key} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="#000" strokeWidth={w} strokeDasharray={dash} />;
+  const box = (P: (u: number, v: number) => [number, number], u0: number, v0: number, u1: number, v1: number, fill: string, w = THIN, key?: string | number) => {
+    const a = P(u0, v0), b = P(u1, v1);
+    return <rect key={key} x={Math.min(a[0], b[0])} y={Math.min(a[1], b[1])} width={Math.abs(b[0] - a[0])} height={Math.abs(b[1] - a[1])} fill={fill} stroke="#000" strokeWidth={w} />;
+  };
+  // --- Стена изнутри, М 1:20: u — от наружной грани левой стойки вдоль стены, z — отметка. ---
+  const k1 = 0.05, V = (u: number, z: number): [number, number] => [45 + u * k1, 125 - z * k1];
+  const wall = 2 * T + span;
+  // --- Узел П, М 1:2,5: y — от наружной грани каркаса внутрь (вправо), z — отметка; центр — середина перемычки. ---
+  const k2 = 0.4, zc = (bar ?? 0) + A.h / 2, Q = (y: number, z: number): [number, number] => [165 + y * k2, 88 - (z - zc) * k2];
+  const zLo = zc - 125, zHi = zc + 125;
+  // --- Узел Р, план у стойки, М 1:2,5: u — от левой грани стойки вдоль стены, y — внутрь (вниз). ---
+  const R = (u: number, y: number): [number, number] => [115 + u * k2, 200 + y * k2];
+  const pinU = T + pinAxes(span)[0];
+  const total = I.walls.reduce((sum, [z0, z1]) => sum + 2 * (pinAxes(span).length * 2) * pinAxes(z1 - z0).length, 0);
+  const spec: [string, string, string, string][] = [
+    ["1", `Перемычка У1 — уголок ${A.h}×${A.h}×${A.s} ГОСТ 8509-93, L=${span}`, String(4 * I.bars.length), "обушок по контуру каркаса, полка внизу внутрь; к стойкам Т1-△3 по контуру"],
+    ["2", `Панель — лист 09Г2С ${I.skin} с отгибами 45`, "4", "изнутри опирается на обушок перемычки"],
+    ["3", `Плита минваты НГ 80–100 кг/м³, ${I.wool.slab[0]}×${I.wool.slab[1]}×${Wt}`, "—", `по закупу; нижний ряд — целая плита в проём ${I.wool.slab[0] - I.wool.squeeze}, верхний — по проёму +${I.wool.squeeze}`],
+    ["4", `Шпилька изоляционная приварная ⌀${I.pin.d}, L=${I.pin.len}`, String(total), "конденсаторная сварка к панели изнутри"],
+    ["5", `Шайба самоконтрящаяся ⌀${I.pin.washer}`, String(total), "до обжатия плиты на 3–5"],
+  ];
+  const notes = [
+    `1. Перемычки — на высоте плиты минус ${I.wool.squeeze} на обжатие: проём ${I.wool.slab[0] - I.wool.squeeze} под плиту ${I.wool.slab[0]}. Обушок — заподлицо с наружными гранями стоек; к стойкам — Т1-△3 по контуру.`,
+    `2. Шпильки поз. 4 — к внутренней стороне панели конденсаторной сваркой до грунтования; шаг ≤ ${I.pin.step}, по ${pinAxes(span).length} по ширине плиты и не менее 2 по высоте; на ${Wt - I.pin.len} короче слоя.`,
+    `3. Панели — на каркас; затем изнутри плиты враспор: ширина ${span + I.wool.squeeze} в проём ${span}, высота — проём +${I.wool.squeeze}; наколоть на шпильки, шайбы — до обжатия 3–5, выступ шпилек скусить.`,
+    "4. Пазуху над горизонтальной полкой перемычки (45×45) и щели > 2 мм заполнить обрезками плиты, без зазоров.",
+    "5. Угловые кассеты — ламели на негорючем клею (лист 1). Минвата — группа НГ (ГОСТ 30244-94); горючие утеплители и плёнки не применять.",
+  ];
+  return (
+    <g>
+      <text x={25} y={16} fontSize={HEAD} fontWeight="bold">
+        Задняя стена изнутри (М 1:20)
+      </text>
+      {box(V, 0, I.zPost, T, H - T, "url(#hatch)", THICK)}
+      {box(V, T + span, I.zPost, wall, H - T, "url(#hatch)", THICK)}
+      {box(V, 0, I.zPost - I.stay, wall, I.zPost, "#999")}
+      {box(V, 0, I.top, wall, H, "#999")}
+      {I.walls.map(([z0, z1], i) => box(V, T, z0, T + span, z1, "url(#wool)", THIN, `w${i}`))}
+      {I.bars.map((z, i) => box(V, T, z, T + span, z + A.h, "#555", THICK, `b${i}`))}
+      {I.walls.flatMap(([z0, z1], i) =>
+        pinAxes(span).flatMap((u) =>
+          pinAxes(z1 - z0).map((z) => {
+            const [x, y] = V(T + u, z0 + z);
+            return <path key={`p${i}-${u}-${z}`} d={`M${x - 1} ${y - 1} L${x + 1} ${y + 1} M${x - 1} ${y + 1} L${x + 1} ${y - 1}`} stroke="#000" strokeWidth={THICK} />;
+          }),
+        ),
+      )}
+      {I.walls.map(([z0, z1], i) => <g key={`d${i}`}>{dim(V(wall, z0), V(wall, z1), [7, 0], String(Math.round(z1 - z0)), true)}</g>)}
+      {I.bars.map((z, i) => <g key={`db${i}`}>{dim(V(wall, z), V(wall, z + A.h), [14, 0], String(A.h), true)}</g>)}
+      {dim(V(0, 0), V(0, bar ?? I.zPost), [-6, 0], `+${bar}`, true)}
+      {dim(V(T, I.zPost), V(T + span, I.zPost), [0, 7], String(span))}
+      {I.walls.length > 0 && (() => {
+        const [z0, z1] = I.walls[0], zs = pinAxes(z1 - z0);
+        const stops = [0, ...zs, z1 - z0];
+        return stops.slice(1).map((v, i) => <g key={`dz${i}`}>{dim(V(T, z0 + stops[i]), V(T, z0 + v), [-14, 0], String(Math.round(v - stops[i])), true)}</g>);
+      })()}
+      {(() => {
+        const us = pinAxes(span), z = I.walls[0][0] + pinAxes(I.walls[0][1] - I.walls[0][0])[0];
+        const stops = [0, ...us, span];
+        return stops.slice(1).map((v, i) => <g key={`du${i}`}>{dim(V(T + stops[i], z), V(T + v, z), [0, -4], String(Math.round(v - stops[i])))}</g>);
+      })()}
+      {pos(V(T + span / 2, (bar ?? 0) + A.h / 2), [100, 30], 1)}
+      {pos(V(T + span * 0.75, I.walls[0][0] + 600), [100, 70], 3)}
+      <text x={25} y={142} fontSize={TXT}>
+        × — шпилька поз. 4; облицовки нет, вид изнутри
+      </text>
+
+      <text x={135} y={16} fontSize={HEAD} fontWeight="bold">
+        П (М 1:2,5) — разрез по перемычке
+      </text>
+      {/* Панель, перемычка-уголок, нижняя плита до полки, пазуха над полкой, верхняя плита; стойка за разрезом — штрихом. */}
+      {box(Q, -I.skin, zLo, 0, zHi, "#000")}
+      {line(Q(T, zLo), Q(T, zHi), THIN, "3 1.5")}
+      {box(Q, 0, zLo, Wt, bar, "url(#wool)")}
+      {box(Q, A.s, bar + A.s, Wt, bar + A.h, "url(#wool)")}
+      {box(Q, 0, bar + A.h, Wt, zHi, "url(#wool)")}
+      <polygon points={[[0, bar], [Wt, bar], [Wt, bar + A.s], [A.s, bar + A.s], [A.s, bar + A.h], [0, bar + A.h]].map(([y, z]) => Q(y, z).join(",")).join(" ")} fill="#555" stroke="#000" strokeWidth={THICK} />
+      {[bar - 70, bar + A.h + 70].map((z, i) => (
+        <g key={`pp${i}`}>
+          {line(Q(0, z), Q(I.pin.len, z), 1.2)}
+          {line(Q(I.pin.len - 2, z - I.pin.washer / 2), Q(I.pin.len - 2, z + I.pin.washer / 2), 1)}
+        </g>
+      ))}
+      {dim(Q(0, bar + A.h), Q(Wt, bar + A.h), [0, -24], String(Wt))}
+      {dim(Q(Wt + 4, bar), Q(Wt + 4, bar + A.h), [12, 0], String(A.h), true)}
+      {dim(Q(0, bar - 70), Q(I.pin.len, bar - 70), [0, 10], String(I.pin.len))}
+      {dim(Q(0, zLo), Q(A.s, zLo), [0, 7], String(A.s))}
+      {pos(Q(A.s / 2, bar + A.h * 0.7), [150, 40], 1)}
+      {pos(Q(-1, zHi - 20), [150, 28], 2)}
+      {pos(Q(Wt * 0.6, zHi - 30), [205, 40], 3)}
+      {pos(Q(I.pin.len * 0.4, bar - 70), [205, 118], 4)}
+      {pos(Q(I.pin.len - 2, bar + A.h + 70 + I.pin.washer / 2), [205, 52], 5)}
+      <text x={Q(-4, zLo)[0] - 12} y={Q(-4, zLo)[1] + 6} fontSize={TXT}>
+        снаружи
+      </text>
+      <text x={Q(Wt, zLo)[0] + 4} y={Q(Wt, zLo)[1] + 6} fontSize={TXT}>
+        внутри
+      </text>
+      <text x={Q(Wt, bar + A.h / 2)[0] + 6} y={Q(Wt, bar + A.h / 2)[1] - 10} fontSize={TXT}>
+        Т1-△3 к стойкам
+      </text>
+      <text x={135} y={156} fontSize={TXT}>
+        Шпильки — условно; пазуха 45×45 — обрезки плиты
+      </text>
+
+      <text x={100} y={172} fontSize={HEAD} fontWeight="bold">
+        Р (М 1:2,5) — план у стойки
+      </text>
+      {/* Панель, вторая стойка (труба), плита враспор от стойки, шпилька с шайбой на первой оси. */}
+      {box(R, 0, -I.skin, 260, 0, "#000")}
+      <rect x={R(0, 0)[0]} y={R(0, 0)[1]} width={T * k2} height={T * k2} rx={6 * k2} fill="url(#hatch)" stroke="#000" strokeWidth={THICK} />
+      <rect x={R(3, 3)[0]} y={R(3, 3)[1]} width={(T - 6) * k2} height={(T - 6) * k2} rx={3 * k2} fill="#fff" stroke="#000" strokeWidth={THIN} />
+      {box(R, T, 0, 260, Wt, "url(#wool)")}
+      {line(R(260, -6), R(260, Wt + 6), THIN, "3 1.5")}
+      {line(R(pinU, 0), R(pinU, I.pin.len), 1.2)}
+      {line(R(pinU - I.pin.washer / 2, I.pin.len - 2), R(pinU + I.pin.washer / 2, I.pin.len - 2), 1)}
+      {dim(R(0, Wt), R(T, Wt), [0, 12], String(T))}
+      {dim(R(T, Wt), R(pinU, Wt), [0, 12], String(Math.round(pinU - T)))}
+      {dim(R(260, 0), R(260, Wt), [8, 0], String(Wt), true)}
+      {pos(R(pinU, I.pin.len * 0.5), [R(pinU, 0)[0] + 30, 232], 4)}
+      {pos(R(T + 170, Wt * 0.5), [R(T + 170, 0)[0] + 40, 232], 3)}
+      <text x={R(0, -I.skin)[0]} y={R(0, -I.skin)[1] - 3} fontSize={TXT}>
+        снаружи — панель поз. 2
+      </text>
+      <text x={R(T, Wt)[0]} y={R(T, Wt)[1] + 22} fontSize={TXT}>
+        плита {span + I.wool.squeeze} враспор в проём {span}
+      </text>
+
+      <SideText spec={spec} notes={notes} />
+      <Stamp code={code} title={title} height={H} node="Перемычка. Крепление утеплителя" sheet={11} scale="1:20; 1:2,5" />
+    </g>
+  );
+}
+
+/**
+ * Лист 12: дверь — узел скрытой петли. План угла М 1:2,5 (створка закрыта и открыта на угол чертежа, ось петли, зона корпуса петли),
+ * створка изнутри М 1:20 с отметками петель; спецификация, требования. Все размеры — из модели (cassetteNode().door).
+ */
+function HingeSheet({ code, title }: { code: string; title: string }) {
+  const n = cassetteNode(), d = n.door, H = n.height, T = d.post, hg = d.hinge, [ax, ay] = hg.at;
+  // План: y — к задней стенке (вверх на листе), перед створки — минус.
+  const k = 0.4, P = (x: number, y: number): [number, number] => [62 + x * k, 150 - y * k];
+  const pts = (list: Pt[]) => list.map(([x, y]) => P(x, y).join(",")).join(" ");
+  const clip = (list: Pt[]) => list.map(([x, y]): Pt => [Math.min(x, 230), y]);
+  // Открытое положение — поворот вокруг оси петли наружу (как на «контур дна.dwg» rev3).
+  const a = (-hg.open * Math.PI) / 180;
+  const turn = (list: Pt[]) => list.map(([x, y]): Pt => [ax + (x - ax) * Math.cos(a) - (y - ay) * Math.sin(a), ay + (x - ax) * Math.sin(a) + (y - ay) * Math.cos(a)]);
+  // Створка изнутри, М 1:20: u — от оси петли вдоль створки, z — отметка.
+  const e = 0.05, dz = d.zPost + hg.gap, dh = d.top - d.zPost - 2 * hg.gap, leaf = 448 - ax;
+  const V = (u: number, z: number): [number, number] => [195 + u * e, 262 - z * e];
+  const spec: [string, string, string, string][] = [
+    ["1", "Створка: наружный лист 3, гнутый", "2", "угол R≈130 + прямой участок"],
+    ["2", "Брусок створки, труба 50×50×3", "2", `L=${fmt(dh)}`],
+    ["3", "Петля скрытая 180°", String(2 * hg.perLeaf), "по каталогу; ≥ 40 кг на створку"],
+    ["4", "Заклёпка резьбовая М6, бортик, A2", String(2 * hg.perLeaf), "в отв. ⌀9 стойки"],
+    ["5", "Уголок-вставка нерж. 4", "2", "притвор на стойке"],
+    ["6", "Основная стойка, труба 60×60×3", "2", "отв. ⌀9 — как у всех стоек"],
+    ["7", "Стойка створки у петель, труба 40×20×2", "2", "дверная часть петли — на заклёпках М6"],
+    ["8", "Диафрагма створки −3 (горизонтальная перемычка)", String(2 * (d.bars.length + 2)), "низ, верх, на стыке утеплителя"],
+  ];
+  const notes = [
+    `1. Ось петель — по «двери.dwg» и «контур дна.dwg» rev3: ${fmt(-ax)} за наружной гранью боковой стены и ${fmt(d.inset - ay)} перед передней гранью основной стойки; створка открывается наружу.`,
+    `2. Петли — на отверстиях ⌀9 № ${hg.holes.map((i) => i + 1).join(", ")} передней грани основной стойки (отметки +${d.hingeZ.map((z) => Math.round(z)).join(", +")}), рамная часть — на резьбовой заклёпке М6; стойки остаются одной деталью.`,
+    "3. Вырезы под петлю в отгибе створки и в уголке-вставке, карман под корпус в утеплителе — по каталогу выбранной петли.",
+    `4. Створка: низ — на ${hg.gap} над основанием, верх — на уровне наружных кассет; между створками 4.`,
+    "5. Модель петли подобрать по каталогу (вынос оси, угол 180°, нагрузка); при втором крепёжном отверстии — добавить его во все стойки на ЧПУ.",
+  ];
+  return (
+    <g>
+      <text x={25} y={16} fontSize={HEAD} fontWeight="bold">
+        План угла у петли (М 1:2,5)
+      </text>
+      {/* Боковая наружная кассета, основная стойка, уголок-вставка. */}
+      <rect x={P(-3, 230)[0]} y={P(-3, 230)[1]} width={3 * k} height={(230 - 127) * k} fill="#000" />
+      <rect x={P(0, T + d.inset)[0]} y={P(0, T + d.inset)[1]} width={T * k} height={T * k} rx={6 * k} fill="url(#hatch)" stroke="#000" strokeWidth={THICK} />
+      <rect x={P(3, T + d.inset - 3)[0]} y={P(3, T + d.inset - 3)[1]} width={(T - 6) * k} height={(T - 6) * k} rx={3 * k} fill="#fff" stroke="#000" strokeWidth={THIN} />
+      <polygon points={pts(d.strip)} fill="url(#hatch2)" stroke="#000" strokeWidth={THICK} />
+      {/* Створка закрыта: утеплитель, внутренний лист, наружный лист (до обрыва). */}
+      <polygon points={pts(clip(d.wool))} fill="url(#wool)" stroke="#000" strokeWidth={THIN} />
+      <polygon points={pts(clip(d.inner))} fill="#000" stroke="#000" strokeWidth={THIN} />
+      {/* Стойка створки у петель 40×20 — в слое утеплителя у оси. */}
+      <polygon points={pts(d.hingeStile)} fill="#fff" stroke="#000" strokeWidth={THICK} />
+      <rect x={P(10, 110)[0]} y={P(10, 110)[1]} width={36 * k} height={16 * k} fill="none" stroke="#000" strokeWidth={THIN} />
+      <polygon points={pts(clip(d.outer))} fill="#000" stroke="#000" strokeWidth={THIN} />
+      <line x1={P(230, -12)[0]} y1={P(230, -12)[1]} x2={P(230, 62)[0]} y2={P(230, 62)[1]} stroke="#000" strokeWidth={THIN} strokeDasharray="3 1.5" />
+      {/* Открыто на угол чертежа — контур штрихом. */}
+      <polygon points={pts(turn(clip(d.outer)))} fill="none" stroke="#000" strokeWidth={THIN} strokeDasharray="2 1" />
+      {/* Ось петли и зона корпуса петли (по каталогу). */}
+      <circle cx={P(ax, ay)[0]} cy={P(ax, ay)[1]} r={1.6} fill="none" stroke="#c00" strokeWidth={THICK} />
+      <line x1={P(ax - 12, ay)[0]} y1={P(ax - 12, ay)[1]} x2={P(ax + 12, ay)[0]} y2={P(ax + 12, ay)[1]} stroke="#c00" strokeWidth={THIN} />
+      <line x1={P(ax, ay - 12)[0]} y1={P(ax, ay - 12)[1]} x2={P(ax, ay + 12)[0]} y2={P(ax, ay + 12)[1]} stroke="#c00" strokeWidth={THIN} />
+      <rect x={P(4, 129)[0]} y={P(4, 129)[1]} width={44 * k} height={34 * k} fill="none" stroke="#c00" strokeWidth={THIN} strokeDasharray="1.5 1" />
+      {dim(P(-3, ay), P(0, ay), [0, 14], fmt(-ax))}
+      {dim(P(T, ay), P(T, d.inset), [10, 0], fmt(d.inset - ay), true)}
+      {dim(P(0, d.inset + T), P(T, d.inset + T), [0, -5], String(T))}
+      {pos(P(200, -1.5), [P(200, 0)[0] + 6, P(200, 0)[1] + 18], 1)}
+      {pos(P(5, d.inset + 30), [36, 60], 6)}
+      {pos(P(30, 125), [P(30, 0)[0] - 10, 52], 5)}
+      {pos(P(25, 112), [P(60, 0)[0] + 10, 72], 3)}
+      <text x={P(ax, ay)[0] - 20} y={P(ax, ay)[1] + 22} fontSize={TXT}>
+        ось петли
+      </text>
+      <text x={P(60, -60)[0]} y={P(60, -60)[1] + 4} fontSize={TXT}>
+        открыто на {hg.open}° — штрихом
+      </text>
+      <text x={P(60, -60)[0]} y={P(60, -60)[1] + 9} fontSize={TXT}>
+        корпус петли — зона красным штрихом
+      </text>
+
+      <text x={180} y={16} fontSize={HEAD} fontWeight="bold">
+        Створка изнутри (М 1:20)
+      </text>
+      <rect x={V(0, dz + dh)[0]} y={V(0, dz + dh)[1]} width={leaf * e} height={dh * e} fill="none" stroke="#000" strokeWidth={THICK} />
+      {/* Каркас створки: диафрагмы (горизонтальные перемычки) и вертикали — стойка у петель и брусок притвора (штрихом). */}
+      {[dz, ...d.bars, dz + dh - 3].map((z) => (
+        <line key={`dia${z}`} x1={V(0, z)[0]} y1={V(0, z)[1]} x2={V(leaf, z)[0]} y2={V(leaf, z)[1]} stroke="#000" strokeWidth={0.8} />
+      ))}
+      {[10, leaf - 50].map((u) => (
+        <rect key={`v${u}`} x={V(u, dz + dh)[0]} y={V(u, dz + dh)[1]} width={(u > 20 ? 50 : 40) * e} height={dh * e} fill="none" stroke="#000" strokeWidth={THIN} strokeDasharray="2 1" />
+      ))}
+      {d.hingeZ.map((z) => (
+        <rect key={z} x={V(0, z + 50)[0]} y={V(0, z + 50)[1]} width={40 * e} height={100 * e} fill="#c00" />
+      ))}
+      {pos(V(leaf / 2, d.bars[0] ?? dz), [V(leaf, 0)[0] + 16, V(0, (d.bars[0] ?? dz) + 150)[1]], 8)}
+      {[0, ...d.hingeZ.map((z) => z - dz), dh].slice(1).map((v, i, arr) => {
+        const from = i ? arr[i - 1] : 0;
+        return <g key={i}>{dim(V(0, dz + from), V(0, dz + v), [-6, 0], String(Math.round(v - from)), true)}</g>;
+      })}
+      {dim(V(leaf, dz), V(leaf, dz + dh), [6, 0], String(Math.round(dh)), true)}
+      {dim(V(0, dz), V(leaf, dz), [0, 6], String(Math.round(leaf)))}
+      <text x={V(0, dz + dh)[0]} y={V(0, dz + dh)[1] - 3} fontSize={TXT}>
+        у петель — слева
+      </text>
+      {pos(V(20, d.hingeZ[1]), [V(leaf, 0)[0] + 16, V(0, d.hingeZ[1])[1]], 3)}
+
+      <SideText spec={spec} notes={notes} />
+      <Stamp code={code} title={title} height={H} node="Дверь. Узел скрытой петли" sheet={12} scale="1:2,5; 1:20" />
     </g>
   );
 }
@@ -1349,10 +1612,10 @@ export default function KmSheet({ code, title }: { code: string; title: string }
   // dir — куда смотрит ось от кассеты к стойке; at — координата оси поперёк; face — грань стойки.
   const fastener = (axis: "x" | "y", at: number, face: number) => {
     const span = (from: number, to: number, w: number) => (axis === "y" ? box(at - w / 2, Math.min(from, to), at + w / 2, Math.max(from, to)) : box(Math.min(from, to), at - w / 2, Math.max(from, to), at + w / 2));
-    const flange = face - n.strip.t - n.cassetteT;
+    const flange = face - n.panelT - 2 * n.tape.t - n.strip.t - n.cassetteT;
     return (
       <g>
-        {/* Заклёпка: бортик ⌀13 × 1,5 в отверстии полосы, тело ⌀9 в стенке и внутри трубы. */}
+        {/* Заклёпка: бортик ⌀13 × 1,5 в отверстии ⌀13 бокового отгиба прямой кассеты, тело ⌀9 в стенке и внутри трубы. */}
         <rect {...span(face - 1.5, face, 13)} fill="#bbb" stroke="#000" strokeWidth={THIN} />
         <rect {...span(face, face + 16, n.hole)} fill="#bbb" stroke="#000" strokeWidth={THIN} />
         {/* Винт М6×16 ISO 7380: головка ⌀10,5 × 3,3, шайба EPDM ⌀12 × 2, стержень ⌀6. */}
@@ -1373,22 +1636,24 @@ export default function KmSheet({ code, title }: { code: string; title: string }
   const E = (u: number, h: number): [number, number] => [EX + u * k, EY - h * k];
 
   const spec: [string, string, string, string][] = [
-    ["1", "Стойка, труба 60×60×3 ГОСТ 30245-2003, L=" + fmt(n.post), "2", `${n.perPost} отв. ⌀${n.hole} в ${n.axis} от ребра, см. вид А; все 8 стоек — одна деталь`],
-    ["2", `Полоса-вставка ${n.strip.w}×${n.strip.t} AISI 304`, "2", "отв. овал 6,6×12 вдоль полосы; выступ за контур 5"],
-    ["3", `Кассета угловая, лист ${n.cassetteT} 09Г2С, развёртка ${fmt(n.unfold)}`, "1", `отгибы ${n.flange} (на чертеже узла 60), в отгибах овал 7×10`],
-    ["4", "Заклёпка резьбовая М6, цил. бортик, полушестигр., A2", String(2 * n.perFlange), `по ${n.perFlange} на отгиб (${n.perPost} в стойке + 1 в поясе)`],
-    ["5", "Винт М6×25 ISO 7380 A2", String(2 * n.perFlange), "длина — по каталогу заклёпки, см. Б"],
+    ["1", "Стойка, труба 60×60×3, L=" + fmt(n.post), "2", `${n.perPost} отв. ⌀${n.hole} (вид А); все 8 — одна деталь`],
+    ["2", `Полоса-вставка ${n.strip.w}×${n.strip.t} AISI 304`, "2", "овал 6,6×12; выступ за контур 5"],
+    ["3", `Кассета наружная угловая, лист ${n.cassetteT}`, "1", `развёртка ${fmt(n.unfold)}; в отгибах овал 7×10`],
+    ["4", "Заклёпка резьбовая М6, бортик, A2", String(2 * n.perFlange), `по ${n.perFlange} на отгиб`],
+    ["5", "Винт М6×30 ISO 7380 A2", String(2 * n.perFlange), "длина — по каталогу, см. Б"],
     ["6", "Шайба М6 EPDM", String(2 * n.perFlange), "под головку винта"],
-    ["7", "Лента EPDM самоклеящаяся 12×1,5 и 12×1", "—", "по 2 полосы на отгиб у кромок: 12×1,5 под полосой, 12×1 — полоса/отгиб"],
-    ["8", `Утеплитель — минвата базальтовая жёсткая 80–100 кг/м³, ${n.woolT}`, "—", "ламели по дуге на негорючем клею, 2 ряда по высоте"],
+    ["7", `Кассета наружная прямая, лист ${n.panelT}`, "2", `отгиб ${n.flange}, отв. ⌀13 под бортик`],
+    ["8", `Минвата базальтовая 80–100 кг/м³, ${n.woolT}`, "—", "ламели на негорючем клею"],
+    ["9", `Кассета внутр. угловая, оцинк. ${n.innerT}, R70`, "1", "лапки 30 на гранях стоек"],
+    ["10", `Накладка нерж. ${n.innerStrip.w}×${fmt(n.innerStrip.t)} AISI 304`, "2", "крепление — уточнить"],
+    ["11", `Кассета внутр. прямая, оцинк. ${n.innerT}`, "2", "от середины грани стойки"],
+    ["12", `Лента EPDM самоклеящаяся ${n.tape.w}×${n.tape.t}`, "—", "по 2 полосы у кромок отгиба, с обеих сторон полосы"],
   ];
   const notes = [
-    "1. Размеры в мм. Узел показан для угла перед-лево, остальные углы — зеркально.",
-    `2. Отверстия ⌀${n.hole} в стойках — на ЧПУ до сварки, в ${n.axis} от наружного ребра, отметки от нижнего торца, симметрично (вид А); стойку правой стороны ставить другим торцом вверх; под полушестигранное тело — шестигранное по каталогу заклёпки.`,
-    "3. Кондуктор под сварку базировать по отверстиям стоек (штифты ⌀8,8). Отверстия при сварке и окраске закрыть; заклёпки ставить после окраски.",
-    "4. Нержавеющую полосу к стали не приваривать; между ними — лента EPDM.",
-    "5. Полоса опирается на бортики заклёпок (бортик 1,5 = лента), см. Б; в полосе — овал 6,6×12 вдоль полосы, ленты — 2 полосы 12 у кромок отгиба, зазор под бортик.",
-    "6. Панель заземлить перемычкой на болт заземления каркаса.",
+    "1. Размеры в мм. Узел — задние углы (показан зеркально, как перед-лево); перед — фасад с дверным проёмом. Чертёж узла — «узел обвязки-3.dwg».",
+    `2. Отв. ⌀${n.hole} в стойках — на ЧПУ до сварки, в ${n.axis} от наружного ребра, от нижнего торца симметрично (вид А). Кондуктор — по отверстиям (штифты ⌀8,8); при сварке и окраске закрыть; заклёпки — после окраски.`,
+    "3. Пакет на грани стойки: отгиб прямой кассеты 3 (отв. ⌀13, в нём бортик заклёпки), лента EPDM 1, полоса 4 (овал 6,6×12), лента 1, отгиб угловой 3 (овал 7×10) — см. Б. Нержавейку к стали не варить.",
+    "4. Внутренние кассеты — от верха основания до низа верхнего пояса; стыки посередине внутренних граней стоек под накладками 10. Кассеты заземлить перемычкой на болт заземления каркаса.",
   ];
 
   const download = () => {
@@ -1455,17 +1720,35 @@ ${new XMLSerializer().serializeToString(copy)}`;
         <rect {...box(s2[0], s2[1], s2[2], s2[3])} fill="url(#hatch2)" stroke="#000" strokeWidth={THICK} />
         <polygon points={pts(n.wool)} fill="url(#wool)" stroke="#000" strokeWidth={THIN} />
         <polygon points={pts(n.cassette)} fill="#000" stroke="#000" strokeWidth={THIN} />
-        {/* Лента EPDM — условно: штриховая линия по стыкам полоса/стойка и полоса/отгиб. */}
-        {[
-          // Две полосы ленты 12 у кромок отгиба (0…12 и отгиб−12…отгиб) — по обе стороны полосы-вставки, у основной и второй стойки.
-          ...[0, n.flange - 12].flatMap((a): [[number, number], [number, number]][] => [
-            [P(a, n.inset), P(a + 12, n.inset)],
-            [P(a, n.inset - n.strip.t), P(a + 12, n.inset - n.strip.t)],
-            [P(n.inset, a), P(n.inset, a + 12)],
-            [P(n.inset - n.strip.t, a), P(n.inset - n.strip.t, a + 12)],
+        {/* Прямые наружные кассеты 3: лицо на 3 за контуром, боковой отгиб по грани стойки (под полосой). Показаны до обрыва. */}
+        {(() => {
+          const t = n.panelT, f = n.flange, L = 200, c = n.inset;
+          const front: Pt[] = [[c - t, -t], [L, -t], [L, 0], [c, 0], [c, f], [c - t, f]];
+          const left: Pt[] = [[-t, c - t], [-t, L], [0, L], [0, c], [f, c], [f, c - t]];
+          return [front, left].map((ring, i) => <polygon key={i} points={pts(ring)} fill="#000" stroke="#000" strokeWidth={THIN} />);
+        })()}
+        {/* Внутренние кассеты 1 (оцинк.): угловая — дуга R70 с лапками на внутренних гранях стоек, прямые — от середины грани; накладки 30×2,5 на стыках. */}
+        <polygon points={pts(n.inner)} fill="#000" stroke="#000" strokeWidth={THIN} />
+        <rect {...box(n.inset + T / 2, T, 200, T + n.innerT)} fill="#000" stroke="#000" strokeWidth={THIN} />
+        <rect {...box(T, n.inset + T / 2, T + n.innerT, 200)} fill="#000" stroke="#000" strokeWidth={THIN} />
+        {n.innerStrips.map(([a, b, c2, d], i) => (
+          <rect key={i} {...box(a, b, c2, d)} fill="url(#hatch2)" stroke="#000" strokeWidth={THICK} />
+        ))}
+        {[200].map((L) => (
+          <g key={L}>
+            {[[P(L, -8), P(L, 12)], [P(L, T - 5), P(L, T + 6)], [P(-8, L), P(12, L)], [P(T - 5, L), P(T + 6, L)]].map(([a, b], i) => (
+              <line key={i} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="#000" strokeWidth={THIN} strokeDasharray="2 1" />
+            ))}
+          </g>
+        ))}
+        {/* Ленты EPDM — условно: штриховая линия по обе стороны полосы-вставки, 2 полосы 12 у кромок отгиба. */}
+        {[0, n.flange - n.tape.w].flatMap((a) =>
+          [n.inset - n.panelT, n.inset - n.panelT - n.tape.t - n.strip.t - n.tape.t].flatMap((c, j): [[number, number], [number, number], string][] => [
+            [P(a, c - n.tape.t / 2), P(a + n.tape.w, c - n.tape.t / 2), `y${a}${j}`],
+            [P(c - n.tape.t / 2, a), P(c - n.tape.t / 2, a + n.tape.w), `x${a}${j}`],
           ]),
-        ].map(([p, q], i) => (
-          <line key={i} x1={p[0]} y1={p[1]} x2={q[0]} y2={q[1]} stroke="#c00" strokeWidth={0.4} strokeDasharray="1.5 1" />
+        ).map(([p, q, key]) => (
+          <line key={key} x1={p[0]} y1={p[1]} x2={q[0]} y2={q[1]} stroke="#c00" strokeWidth={0.6} strokeDasharray="1.5 1" />
         ))}
         {fastener("y", n.axis, n.inset)}
         {fastener("x", n.axis, n.inset)}
@@ -1474,12 +1757,14 @@ ${new XMLSerializer().serializeToString(copy)}`;
         {dim(P(0, n.inset + T), P(T, n.inset + T), [0, -6], String(T))}
         {dim(P(0, n.inset + T), P(n.axis, n.inset + T), [0, -12], fmt(n.axis))}
         {dim(P(post2[0] + T, 0), P(post2[0] + T, T), [6, 0], String(T), true)}
-        {dim(P(-5, n.inset - n.strip.t), P(-5, n.inset), [-6, 0], String(n.strip.t), true)}
+        {dim(P(-5, n.inset - n.panelT - n.tape.t - n.strip.t), P(-5, n.inset - n.panelT - n.tape.t), [-6, 0], String(n.strip.t), true)}
         {dim(P(0, -5), P(n.inset, -5), [0, 9], String(n.inset))}
-        {dim(P(n.inset - n.strip.t, -5), P(n.inset, -5), [0, 15], String(n.strip.t))}
+        {dim(P(n.inset - n.panelT - n.tape.t - n.strip.t, -5), P(n.inset - n.panelT - n.tape.t, -5), [0, 15], String(n.strip.t))}
+        {dim(P(n.inset - n.panelT, -5), P(n.inset, -5), [0, 21], String(n.panelT))}
         {dim(P(n.inset, -5), P(n.inset, 0), [6, 0], "5", true)}
+        {dim(P(T, T), P(n.inset, T), [0, -4], "R70")}
         <text x={P(40, 40)[0]} y={P(40, 40)[1]} fontSize={TXT}>
-          R126 (наружн.)
+          R133 (наружн.)
         </text>
         <text x={P(-12, n.inset + T + 8)[0]} y={P(-12, n.inset + T + 8)[1]} fontSize={TXT}>
           Контур каркаса
@@ -1488,13 +1773,17 @@ ${new XMLSerializer().serializeToString(copy)}`;
         {/* Позиции. */}
         {pos(P(T - 4, n.inset + T - 4), P(T + 25, n.inset + T + 15), 1)}
         {pos(P(post2[0] + T - 4, T - 4), P(post2[0] + T + 15, T + 18), 1)}
-        {pos(P(-3, n.inset - 2), P(-12, n.inset + 20), 2)}
-        {pos(P(n.inset - 2, -3), P(n.inset - 20, -12), 2)}
+        {pos(P(-3, n.inset - n.panelT - 2), P(-12, n.inset + 20), 2)}
+        {pos(P(n.inset - n.panelT - 2, -3), P(n.inset - 20, -12), 2)}
         {pos(P(70, 25), P(95, 45), 3)}
         {pos(P(n.axis + 5, n.inset + 10), P(T + 25, n.inset + 35), 4)}
-        {pos(P(n.axis - 4, n.inset - n.strip.t - n.cassetteT - 4), P(T + 25, n.inset - 25), 5)}
-        {pos(P(n.axis + 6, n.inset - n.strip.t - n.cassetteT - 1), P(T + 40, n.inset - 12), 6)}
-        {pos(P(n.inset - 1, T + 2), P(n.inset + 30, T + 30), 7)}
+        {pos(P(n.axis - 4, n.inset - n.panelT - n.strip.t - n.cassetteT - 4), P(T + 25, n.inset - 25), 5)}
+        {pos(P(n.axis + 6, n.inset - n.panelT - n.strip.t - n.cassetteT - 1), P(T + 40, n.inset - 12), 6)}
+        {pos(P(170, -1.5), P(175, -14), 7)}
+        {pos(P(-1.5, 175), P(-14, 180), 7)}
+        {pos(P(95, T + 0.5), P(110, T + 16), 9)}
+        {pos(P(62, 160), P(85, 178), 10)}
+        {pos(P(180, T + 0.5), P(190, T + 16), 11)}
         {pos(P(62, 62), P(100, 100), 8)}
 
         {/* Выноска «Б» — на крепёж основной стойки. */}
@@ -1505,7 +1794,7 @@ ${new XMLSerializer().serializeToString(copy)}`;
         </text>
 
         {/* --- Выносной элемент Б: пакет крепления в истинных толщинах --- */}
-        <DetailB hole={n.hole} wall={s} strip={n.strip.t} flange={n.cassetteT} dim={dim} pos={pos} />
+        <DetailB hole={n.hole} wall={s} panel={n.panelT} strip={n.strip.t} flange={n.cassetteT} dim={dim} pos={pos} />
 
         {/* --- Вид А: сверловка стойки --- */}
         <text x={EX - 10} y={13} fontSize={HEAD} fontWeight="bold">
@@ -1598,6 +1887,8 @@ ${new XMLSerializer().serializeToString(copy)}`;
         {sheet === 8 && <TubesSheet code={code} title={title} marks={marks} H={n.height} />}
         {sheet === 9 && <PlatesSheet code={code} title={title} marks={marks} H={n.height} />}
         {sheet === 10 && <GeneralSheet code={code} title={title} marks={marks} H={n.height} />}
+        {sheet === 11 && <WoolSheet code={code} title={title} />}
+        {sheet === 12 && <HingeSheet code={code} title={title} />}
       </svg>
     </div>
   );

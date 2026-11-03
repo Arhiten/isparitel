@@ -19,8 +19,9 @@ const root = path.join(process.cwd(), SERIES.evaporator.folder);
   await fs.copyFile(SOURCE_DWG, path.join(root, "Исходник", path.basename(SOURCE_DWG))).catch(() => console.log(`Нет чертежа ${SOURCE_DWG}`));
   await fs.writeFile(path.join(root, "base.json"), JSON.stringify(base, null, 2), "utf8");
   const solids = solidsOf(base);
-  const kg = (re: RegExp) => solids.filter((s) => re.test(s.material.id)).reduce((sum, s) => sum + s.weight, 0);
-  console.log(`base.json: ${base.parts.length} дет.; каркас ${kg(/ch|tube|s8|s6|s5/).toFixed(1)} кг, обшивка ${kg(/s2/).toFixed(1)} кг`);
+  // Створки двери — отдельно от каркаса и обшивки.
+  const kg = (re: RegExp, door = false) => solids.filter((s) => re.test(s.material.id) && s.part.id.startsWith("door") === door).reduce((sum, s) => sum + s.weight, 0);
+  console.log(`base.json: ${base.parts.length} дет.; каркас ${kg(/ch|tube|an|rd|s8|s3/).toFixed(1)} кг, наружные кассеты и цоколь ${kg(/s2|k3/).toFixed(1)} кг, внутренние ${kg(/zn1|ss25/).toFixed(1)} кг, двери ${kg(/./, true).toFixed(1)} кг`);
   const ids = new Set(base.parts.map((p) => p.id));
   for (const dir of await fs.readdir(root)) {
     const file = path.join(root, dir, "unit.json");

@@ -28,6 +28,12 @@ export const SOURCE_DWG = "C:\\Users\\User\\Desktop\\Работа\\Испари�
 const CH10 = { kind: "channel" as const, h: 100, w: 46, s: 4.5, t: 7.6, kgm: 8.59 };
 const CH8 = { kind: "channel" as const, h: 80, w: 40, s: 4.5, t: 7.4, kgm: 7.05 };
 const TUBE = { kind: "tube" as const, h: 60, w: 60, s: 3, t: 3, kgm: 5.13 };
+/** Труба 50×50×3 ГОСТ 30245-2003 — стойки дверного проёма фасада и их кронштейны. */
+const TUBE50 = { kind: "tube" as const, h: 50, w: 50, s: 3, t: 3, kgm: 4.25 };
+/** Труба 40×20×2 ГОСТ 30245-2003 — стойка каркаса створки у петель (на ней — дверная часть скрытых петель). */
+const TUBE4020 = { kind: "tube" as const, h: 40, w: 20, s: 2, t: 2, kgm: 1.76 };
+/** Уголок 50×50×5 ГОСТ 8509-93 — перемычки стен под утеплитель. */
+const ANGLE = { kind: "angle" as const, h: 50, w: 50, s: 5, t: 5, kgm: 3.77 };
 
 /** Пределы привязки: швеллеры под установку — между стенками боковых 8П основания (оси от и до), между собой — не ближе ширины полки + 20. */
 export function railLimits(size: CabinetSize = FIRST) {
@@ -51,7 +57,8 @@ const SKIN = 2;
 /** Косынки-опоры в плоскости верха швеллеров — лист 8 мм. */
 const STAY_T = 8;
 /** Панель прямого участка: отгиб по низу и верху — от наружной грани, мм (по «узел обвязки-1.dwg»). Цоколь: нижняя полка под основанием. */
-const PANEL = { ret: 45 }, PLINTH = { leg: 45 };
+/** Прямая наружная кассета (панель): отгибы по низу и верху ret, лист t (по «узел обвязки-3.dwg» — 3, как угловая). */
+const PANEL = { ret: 45, t: 3 }, PLINTH = { leg: 45 };
 /** Фигурный вырез стенки швеллеров у контура: длина от торца и ширина скоса, мм (огибает отгиб панели и цоколь с зазором 2). */
 const NOTCH = { len: 47, slope: 17 };
 /** Косынки у основания стоек (узел обвязки-2): катет и ось плоскости от внутренней грани трубы, мм. */
@@ -67,11 +74,17 @@ const GHOST = /^(s2|k3)$/;
 
 // Цены — ориентировочные (уточнить по прайсу); металл — за хлыст 6 м, лист 1250 × 2500 или мерную заготовку.
 const steel = (id: string, name: string, thickness: number, price: number, sheet = 1250, len = 2500): Material => ({ id, name, thickness, sheetW: sheet, sheetL: len, price, density: 7850, E: 206000, strength: 345, gap: 10, margin: 10 });
-const bar = (id: string, name: string, p: typeof CH10 | typeof TUBE, price: number): Material => ({ id, name, thickness: p.w, sheetW: p.h, sheetL: 6000, price, density: 7850, E: 206000, strength: 345, bar: true, gap: 3, profile: p });
+const bar = (id: string, name: string, p: typeof CH10 | typeof TUBE | typeof TUBE50 | typeof TUBE4020 | typeof ANGLE, price: number): Material => ({ id, name, thickness: p.w, sheetW: p.h, sheetL: 6000, price, density: 7850, E: 206000, strength: 345, bar: true, gap: 3, profile: p });
 const MATERIALS: Material[] = [
   bar("ch10", "Швеллер 10П ГОСТ 8240-97", CH10, 4400),
   bar("ch8", "Швеллер 8П ГОСТ 8240-97", CH8, 3600),
   bar("tube60", "Труба 60×60×3 ГОСТ 30245-2003", TUBE, 2900),
+  // Цена хлыста 6 м — ориентировочная.
+  bar("an50", "Уголок 50×50×5 ГОСТ 8509-93", ANGLE, 1800),
+  // Стойки дверного проёма и кронштейны фасада; цена хлыста 6 м — ориентировочная.
+  bar("tube50", "Труба 50×50×3 ГОСТ 30245-2003", TUBE50, 2500),
+  // Стойка створки у петель; цена хлыста 6 м — ориентировочная.
+  bar("tube4020", "Труба 40×20×2 ГОСТ 30245-2003", TUBE4020, 1100),
   // Бобышки под рым-болты — из круга 50 ГОСТ 2590-2006 (09Г2С), режется в размер 25.
   { id: "rd50", name: "Круг 50 ГОСТ 2590-2006 (бобышки)", thickness: 50, sheetW: 50, sheetL: 1000, price: 900, density: 7850, E: 206000, strength: 345, bar: true, gap: 3 },
   // Мелкие детали узлов — из мерной заготовки 500 × 500 (обрезь / лазер подрядчика), цена по весу; лист 1250 × 2500 на серию из 1–2 шкафов не нужен.
@@ -81,8 +94,11 @@ const MATERIALS: Material[] = [
   // Декоративная полоса-вставка между кассетами: нержавейка, плоский прокат 65 × 4, хлыст 6 м.
   { id: "ss4", name: "Полоса нержавеющая 45×4 AISI 304", thickness: 4, sheetW: 45, sheetL: 6000, price: 3100, density: 7900, E: 193000, strength: 520, bar: true, gap: 3 },
   steel("s2", "Лист 09Г2С (наружная обшивка)", SKIN, 5400),
-  // Утеплитель кассет и панелей: жёсткая базальтовая минвата 80–100 кг/м³ (НГ), плита 1000 × 600 × 50; цена не задана.
-  { id: "mw50", name: "Минвата базальтовая жёсткая 80–100 кг/м³, плита 1000×600×50", thickness: 50, sheetW: 600, sheetL: 1000, price: 0, density: 90, E: 1, strength: 0.01, gap: 5, margin: 0 },
+  // Внутренние кассеты — оцинковка 1 мм; накладки на их стыках — нержавейка 30 × 2,5 (цены не заданы).
+  steel("zn1", "Лист оцинкованный 1 мм ГОСТ 14918-2020 (внутренние кассеты)", 1, 0),
+  { id: "ss25", name: "Накладка нержавеющая 30×2,5 AISI 304 (внутренние кассеты)", thickness: 2.5, sheetW: 30, sheetL: 6000, price: 0, density: 7900, E: 193000, strength: 520, bar: true, gap: 3 },
+  // Утеплитель кассет и панелей: жёсткая базальтовая минвата 80–100 кг/м³ (НГ), плита 1200 × 600 × 50; цена не задана.
+  { id: "mw50", name: "Минвата базальтовая жёсткая 80–100 кг/м³, плита 1200×600×50", thickness: 50, sheetW: 600, sheetL: 1200, price: 0, density: 90, E: 1, strength: 0.01, gap: 5, margin: 0 },
 ];
 
 const r = (n: number) => +n.toFixed(2);
@@ -110,7 +126,7 @@ const Q = Math.tan(Math.PI / 8);
 /**
  * Косынки-опоры в плоскости верха швеллеров (по «контур дна.dwg», жёлтое), лист 8 мм — у переднего левого узла, в координатах изделия;
  * остальные узлы — зеркально. Кромки по контуру — как на чертеже (контур — несущий каркас, обшивка снаружи); skin > 0 — уменьшить их, если каркас окажется внутри обшивки.
- * corner — угловая (rev2): под кассетой — наружная дуга R126 кассеты, внутренняя дуга, кромки у полос-вставок; между консолями 10П и 8П;
+ * corner — угловая (rev2): под кассетой — дуга R126 прежней кассеты (новая — R≈133, «узел обвязки-3.dwg»), внутренняя дуга, кромки у полос-вставок; между консолями 10П и 8П;
  * cantilever — у консоли 10П: за стенкой 10П, снаружи 8П, вырез R70 вокруг угла узла, свободная кромка — дуга ≈ R150;
  * inner — у второй стойки (rev2): с внутренней стороны 8П за 10П, сектор между вырезом R≈70 и дугой R126 вокруг угла пересечения — опора свободной части торца второй стойки.
  * corner и inner — вершины из чертежа (угол зад-лево) в координаты переднего левого: (X − 886.1804, 1027.9267 − Y).
@@ -127,39 +143,114 @@ const STAYS = (inset: number, w10: number, skin: number, cut = 70) => ({
 });
 
 /**
- * Типовой угол обшивки (пирог панели) — по чертежу «узел обвязки.dwg» (угол зад-лево, вершины с выпуклостями как в DWG).
- * В координаты переднего левого угла: (X − 265.1081, 322.4197 − Y) — от левой грани и от передней грани каркаса.
- * cassette — гнутый лист кассеты 3 мм (лиловое): наружная дуга R≈126 и два отгиба (на чертеже 60, в модели FLANGE) внутрь к полосам-вставкам;
- * lid — верхняя и нижняя плоскость кассеты (оранжевое); strip — нержавеющая полоса-вставка 4 × 65 (серое), выступает за контур на 5;
+ * Типовой угол обшивки (пирог панели) — по чертежу «узел обвязки-3.dwg» (угол зад-лево, вершины с выпуклостями как в DWG;
+ * заменяет «узел обвязки.dwg»). В координаты переднего левого угла: (X − 265.1081, 322.4197 − Y) — от левой грани и от передней грани каркаса.
+ * Пакет на грани стойки (от стойки наружу): боковой отгиб прямой наружной кассеты 3 → полоса-вставка нерж. 4 → отгиб угловой кассеты 3.
+ * cassette — угловая наружная кассета 3 мм (лиловое): дуга R≈133 (наружная — на 3 за контуром, заподлицо с прямыми кассетами), отгибы FLANGE;
+ * lid — верхняя и нижняя плоскость угловой кассеты; strip — полоса-вставка нерж. 4 × 45 (серое), выступ за контур 5;
+ * inner — внутренняя угловая кассета 1 мм (голубое): дуга R70 вокруг угла пересечения (130, 130), лапки 30 на внутренних гранях стоек;
+ * innerStrips — накладки нерж. 30 × 2,5 (серое) на стыках внутренних кассет (середина внутренней грани стойки);
  * post — вторая труба-стойка 60×60 на передней (задней) стороне (зелёное): x 130…190, по контуру.
  */
-// Отгиб кассеты сужен с 60 (по чертежу) до FLANGE: концы отгибов и концы внутренней дуги крышки — на FLANGE от граней каркаса;
-// дуга крышки — с той же выпуклостью, что на чертеже.
+/**
+ * Уплотнительные ленты EPDM 12 × 1 (возвращены): по обе стороны полосы-вставки — отгиб прямой кассеты ↔ полоса и полоса ↔ отгиб угловой,
+ * по 2 полосы у кромок отгиба (между ними — зазор под крепёж). Угловая кассета по «узел обвязки-3.dwg» отодвинута наружу на 2 × TAPE.t
+ * (отгибы — с 120…123 на 118…121); дуга остаётся на месте — меняется только переход дуги в отгиб.
+ */
+const TAPE = { w: 12, t: 1 }, SEAL = 2 * TAPE.t, STRIP_T = 4;
 const NODE_DWG = {
-  cassette: [[265.1697, 196.4197, 0], [265.1081 + FLANGE, 196.4197, 0], [265.1081 + FLANGE, 199.4197, 0], [268.3012, 199.4197, -0.3823], [388.1081, 319.2267, 0], [388.1081, 322.4197 - FLANGE, 0], [391.1081, 322.4197 - FLANGE, 0], [391.1081, 322.3582, 0.3963]],
-  lid: [[265.1081 + FLANGE, 196.4197, 0], [265.1081 + FLANGE, 199.4197, -0.357], [388.1081, 322.4197 - FLANGE, 0], [391.1081, 322.4197 - FLANGE, 0], [391.1081, 322.3582, 0.3963], [265.1697, 196.4197, 0], [265.1081 + FLANGE - 0.2353, 196.4197, 0]],
+  cassette: [[262.2924, 199.4197 + SEAL, 0], [305.1081, 199.4197 + SEAL, 0], [305.1081, 202.4197 + SEAL, 0], [265.4821, 202.2731 + SEAL, -0.3702], [385.1081 - SEAL, 322.0283, 0], [385.1081 - SEAL, 282.4197, 0], [388.1081 - SEAL, 282.4197, 0], [388.1081 - SEAL, 325.2354, 0.3837]],
+  // Крышка — по наружному контуру кассеты, внутренняя кромка — дуга между концами отгибов (выпуклость как у прежней крышки).
+  lid: [[305.1081, 199.4197 + SEAL, 0], [305.1081, 202.4197 + SEAL, -0.357], [385.1081 - SEAL, 282.4197, 0], [388.1081 - SEAL, 282.4197, 0], [388.1081 - SEAL, 325.2354, 0.3837], [262.2924, 199.4197 + SEAL, 0]],
+  inner: [[325.1081, 162.4197, 0], [325.1081, 192.4197, -0.4142], [395.1081, 262.4197, 0], [425.1081, 262.4197, 0], [425.1081, 261.4197, 0], [395.1081, 261.4197, 0.4142], [326.1081, 192.4197, 0], [326.1081, 162.4197, 0]],
 } as const;
 const fromNode = (verts: readonly (readonly [number, number, number])[]): Pt[] => bulged(verts.map(([x, y, b]) => [x, y, b])).map(([x, y]): Pt => [r(x - 265.1081), r(322.4197 - y)]);
+/**
+ * Двустворчатая дверь во весь перед — по «двери.dwg» (закрыто; в «контур дна.dwg» rev3 — открыто на 20°). Координаты переднего
+ * левого угла: (X − 3081.5712, Y − 127.9267), y = 0 — передняя грань каркаса, перед — минус. Левая створка; правая — зеркально по X.
+ * Створка — кассета: наружный лист 3 мм (лиловое) — угол по дуге R≈130 и прямой участок до середины, обхватывает вертикальный
+ * брусок створки (труба 50×50×3, чёрное); внутренний лист оцинк. 1 мм (голубое); между ними утеплитель 50 (оранжевое).
+ * Ось петель — наружная кромка створки у боковой стены (HINGE): по «контур дна.dwg» rev3 створка поворачивается вокруг неё.
+ * Зазор между створками — 4. Каркас створки (DOOR_FRAME): брусок притвора 50×50, стойка у петель 40×20, диафрагмы 3 мм внизу, вверху и
+ * на стыке рядов утеплителя — горизонтальные перемычки: замыкают створку на кручение (петли с одной стороны) и держат утеплитель.
+ */
+const DOOR_DWG = {
+  outer: [[-2.8157, 123, 0], [40, 123, 0], [39.9889, 120.0001, 0], [0.3739, 120.1467, 0.3853], [127, 0, 0], [445, 0, 0], [445, 50, 0], [420, 50, 0], [420, 53, 0], [448, 53, 0], [448, -2.9661, 0], [127, -2.9661, -0.3923]],
+  inner: [[40, 123, 0], [53.3555, 123, 0.3877], [130.0655, 53, 0], [420, 53, 0], [420, 52, 0], [130.0655, 52, -0.3843], [52.4483, 122, 0], [39.9944, 122, 0]],
+  wool: [[0.3739, 120.1467, 0], [50.6103, 120.1467, 0.3784], [130.0655, 49.9639, 0], [395, 50, 0], [395, 0, 0], [130.0655, 0, -0.392]],
+  stile: [[401, 0, 0], [439, 0, 0.4142], [445, 6, 0], [445, 44, 0.4142], [439, 50, 0], [401, 50, 0.4142], [395, 44, 0], [395, 6, 0.4142]],
+  strip: [[-5, 127, 0], [61, 127, 0], [61, 147, 0], [65, 147, 0], [65, 123, 0], [-5, 123, 0]],
+  // Каркас створки: стойка у петель — труба 40×20 в слое утеплителя у оси (на ней — дверная часть петель);
+  // диафрагма — пластина 3 по сечению створки между наружным и внутренним листом, от угла до бруска притвора включительно.
+  hingeStile: [[8, 92, 0], [48, 92, 0], [48, 112, 0], [8, 112, 0]],
+  diaphragm: [[0.3739, 120.1467, 0], [50.6103, 120.1467, 0.3784], [130.0655, 49.9639, 0], [445, 50, 0], [445, 0, 0], [130.0655, 0, -0.392]],
+} as const;
+const DOOR = Object.fromEntries(Object.entries(DOOR_DWG).map(([k, v]) => [k, bulged(v.map(([x, y, b]) => [x, y, b])).map(([x, y]): Pt => [r(x), r(y)])])) as Record<keyof typeof DOOR_DWG, Pt[]>;
+/**
+ * Петли створки — скрытые (принято): ось (левой створки) и угол открывания на чертеже «контур дна.dwg» rev3; по высоте — на отверстиях
+ * ⌀9 передней грани основной стойки (те же, что у всех стоек под заклёпки; holes — их номера снизу), чтобы стойки остались одной деталью.
+ * gap — зазор створки до основания и до верхнего пояса.
+ */
+const HINGE = { at: [-2.8157, 123] as Pt, open: 20, perLeaf: 3, holes: [0, 2, 5], gap: 5 };
+/** Каркас створки: толщина диафрагмы (лист k3). */
+const DOOR_FRAME = { plate: 3 };
+/** Половина периметра контура — развёртка гнутого листа по средней линии (для раскроя и массы). */
+const halfPerimeter = (pts: Pt[]) => pts.reduce((sum, p, i) => sum + Math.hypot(pts[(i + 1) % pts.length][0] - p[0], pts[(i + 1) % pts.length][1] - p[1]), 0) / 2;
+
 /** Сечения угла в координатах переднего левого угла каркаса. */
 const NODE = {
   cassette: fromNode(NODE_DWG.cassette),
   lid: fromNode(NODE_DWG.lid),
-  // Полосы-вставки: у второй стойки (по её левой грани) и у основной стойки (по её передней грани): [x0, y0, x1, y1].
+  inner: fromNode(NODE_DWG.inner),
+  // Полосы-вставки: у второй стойки (по её левой грани) и у основной стойки (по её передней грани): [x0, y0, x1, y1] — на ленте по отгибу прямой кассеты 3.
   strips: [
-    [126, -5, 130, FLANGE],
-    [-5, 126, FLANGE, 130],
+    [127 - TAPE.t - STRIP_T, -5, 127 - TAPE.t, FLANGE],
+    [-5, 127 - TAPE.t - STRIP_T, FLANGE, 127 - TAPE.t],
+  ] as [number, number, number, number][],
+  // Накладки внутренних кассет: на внутренней грани основной стойки (x 61…63,5) и второй стойки (y 61…63,5): [x0, y0, x1, y1].
+  innerStrips: [
+    [61, 145, 63.5, 175],
+    [145, 61, 175, 63.5],
   ] as [number, number, number, number][],
   post: [130, 0] as Pt,
 };
-/** Утеплитель кассет и панелей: толщина слоя и число кусков по высоте (плита 1000 — шкаф выше режется на ряды). */
-const WOOL = { t: 50, rows: 2 };
+/**
+ * Утеплитель кассет и панелей: толщина слоя, плита (длина × ширина) и обжатие плиты в проёме, мм.
+ * Плита стоит длиной по высоте; горизонтальные перемычки каркаса — по высоте плиты минус обжатие (проём 1180 под плиту 1200).
+ */
+const WOOL = { t: 50, slab: [1200, 600] as const, squeeze: 20 };
+/** Наименьший остаток проёма над последней перемычкой, мм: ниже — перемычку не ставить. */
+const BAR_MIN_REST = 200;
+/**
+ * Горизонтальные перемычки стен (уголок высотой T, низ на отметках bars) и ряды утеплителя по высоте:
+ * walls — проёмы стен между перемычками, corner — ряды угловой кассеты (без перемычек, стыки на тех же отметках).
+ */
+/**
+ * Крепление утеплителя стен (по принципу ШИУ-01-МК лист 10): изоляционные шпильки ⌀3 приварены конденсаторной сваркой
+ * к внутренней стороне панели, плиты накалываются изнутри и прижимаются самоконтрящимися шайбами ⌀38.
+ * Шпилька на 5 короче слоя; шаг ≤ step, от кромок плиты ≤ step / 2, не менее 2 по каждой стороне плиты.
+ */
+const PIN = { d: 3, len: WOOL.t - 5, washer: 38, step: 400 };
+/** Оси шпилек вдоль стороны плиты длиной len (от её начала): поровну, не менее 2, шаг ≤ PIN.step. */
+export const pinAxes = (len: number) => {
+  const n = Math.max(2, Math.ceil(len / PIN.step));
+  return Array.from({ length: n }, (_, i) => ((i + 0.5) * len) / n);
+};
+
+function woolLayout(zPost: number, top: number, T: number) {
+  const L = WOOL.slab[0] - WOOL.squeeze, bars: number[] = [];
+  for (let z = zPost; z + L + T + BAR_MIN_REST <= top; z += L + T) bars.push(z + L);
+  const walls = [zPost, ...bars.map((b) => b + T)].map((z0, i): [number, number] => [z0, bars[i] ?? top]);
+  const corner = [zPost, ...bars].map((z0, i): [number, number] => [z0, bars[i] ?? top]);
+  return { bars, walls, corner };
+}
 /**
  * Слой утеплителя угловой кассеты в плане (координаты переднего левого угла): по внутренней дуге гнутого листа,
  * толщина WOOL.t к центру дуги. Дуга — вершины между концами внутренней дуги чертежа узла; центр — по трём точкам.
  */
 const WOOL_CORNER: Pt[] = (() => {
   const c = NODE.cassette, near = (q: Pt) => c.reduce((best, p, i) => (Math.hypot(p[0] - q[0], p[1] - q[1]) < Math.hypot(c[best][0] - q[0], c[best][1] - q[1]) ? i : best), 0);
-  const arc = c.slice(near([3.19, 123]), near([123, 3.19]) + 1);
+  const arc = c.slice(near([0.37, 120.15 - SEAL]), near([120 - SEAL, 0.39]) + 1);
   const [a, b, d] = [arc[0], arc[Math.floor(arc.length / 2)], arc[arc.length - 1]];
   const k = 2 * (a[0] * (b[1] - d[1]) + b[0] * (d[1] - a[1]) + d[0] * (a[1] - b[1]));
   const sq = (p: Pt) => p[0] ** 2 + p[1] ** 2;
@@ -178,7 +269,9 @@ const WOOL_CORNER_DEV = (() => {
 })();
 /** Лист кассеты: толщина и развёртка (отгиб 60 + дуга по средней линии + отгиб 60). */
 /** Полоса-вставка — по глубине отгиба кассеты: выступ за контур 5 + отгиб FLANGE (45 при отгибе 40). Лента EPDM — по 2 полосы шириной TAPE.w у кромок отгиба. */
-const CASSETTE_T = 3, STRIP = { t: 4, w: 5 + FLANGE }, TAPE = { w: 12, under: 1.5, over: 1 };
+const CASSETTE_T = 3, STRIP = { t: STRIP_T, w: 5 + FLANGE };
+/** Наружный радиус угловой кассеты (по «узел обвязки-3.dwg» — ≈ 133 вокруг угла пересечения), внутренней кассеты и её лист, накладки внутренних кассет. */
+const CASSETTE_R = 133, INNER = { r: 70, t: 1, leg: 30 }, INNER_STRIP = { w: 30, t: 2.5 };
 /** Крепление кассет к стойкам: шаг заклёпок по высоте отгиба и отступ крайних от торцов, мм. */
 const FIX = { step: 350, edge: 60 };
 /** Отверстие в стойке под резьбовую заклёпку М6 полушестигранную — ⌀9 (уточнить по каталогу; под шестигранник — шестигранное отверстие). */
@@ -229,7 +322,14 @@ export function cassetteNode(size: CabinetSize = FIRST) {
     /** Утеплитель угловой кассеты в плане и его толщина (лист КМ 1). */
     wool: WOOL_CORNER,
     woolT: WOOL.t,
-    unfold: r(2 * FLANGE + (Math.PI / 2) * (126 - CASSETTE_T / 2)),
+    unfold: r(2 * FLANGE + (Math.PI / 2) * (CASSETTE_R - CASSETTE_T / 2)),
+    /** Прямая наружная кассета, внутренние кассеты и накладки (лист КМ 1). */
+    panelT: PANEL.t,
+    inner: NODE.inner,
+    innerT: INNER.t,
+    innerStrips: NODE.innerStrips,
+    innerStrip: INNER_STRIP,
+    tape: TAPE,
     flange: FLANGE,
     axis: RIVET_AXIS,
     strips: NODE.strips,
@@ -245,6 +345,10 @@ export function cassetteNode(size: CabinetSize = FIRST) {
     channels: { ch10: CH10, ch8: CH8, l10: size.W, console: INSET, span: size.D - 2 * INSET - 2 * CH10.w, zg: CH10.h - STAY_T },
     /** Узлы Д, Е, Ж (листы КМ 5, 6): анкеры в полках 10П, заземление на 8П, бобышки строповки над осями стоек. */
     site: { anchor: ANCHOR, lift: LIFT, W: size.W, D: size.D, inset: INSET, ch10: CH10, ch8: CH8, tube: TUBE.h },
+    /** Дверь и скрытые петли (лист КМ 12): контуры створки, ось, отметки петель, зазор. */
+    door: { ...DOOR, hinge: HINGE, hingeZ: HINGE.holes.map((k) => fix.rivetZ[k]), zPost: CH10.h, top: size.H + PANEL.t + HINGE.gap, post: TUBE.h, inset: INSET, bars: woolLayout(CH10.h + HINGE.gap + DOOR_FRAME.plate, size.H + PANEL.t - DOOR_FRAME.plate, DOOR_FRAME.plate).bars },
+    /** Перемычки стен и крепление утеплителя (лист КМ 11): раскладка рядов, уголок, плита, шпильки; span — проём передней стены. */
+    insul: { ...woolLayout(CH10.h, size.H - STAY_T, ANGLE.h), angle: ANGLE, wool: WOOL, pin: PIN, span: size.W - 2 * INSET - 2 * TUBE.h, skin: SKIN, stay: STAY_T, zPost: CH10.h, top: size.H - STAY_T },
   };
 }
 export function evaporatorBase(size: CabinetSize = FIRST): AppState {
@@ -316,9 +420,12 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
   const beltDrilled = (len: number, at: number[]) => ({ outer: [[0, 0], [len, 0], [len, T], [0, T]] as Pt[], cutouts: [], pockets: [], drills: at.map((x) => ({ x: r(x), y: T / 2, d: RIVET_HOLE })) });
   const stays = STAYS(INSET, CH10.w, e), topStays = STAYS(INSET, T, e);
   for (const c of corners) {
+    // Передние углы — фасад с дверным проёмом (FACADE): второй стойки, угловой кассеты и косынок у второй стойки нет.
+    const front = c.sy > 0;
     // Косынки-опоры 8 мм в плоскости верха швеллеров (по чертежу, жёлтое): контур переднего левого узла — зеркально к своему.
     const mirror = (p: Pt): Pt => [c.sx > 0 ? p[0] : W - p[0], c.sy > 0 ? p[1] : D - p[1]];
     for (const [key, title] of [["corner", "угловая (под кассетой)"], ["cantilever", "у консоли 10П (опора стойки)"], ["inner", "у второй стойки"]] as const) {
+      if (front && key === "inner") continue;
       const pts = stays[key].map(mirror);
       const lo: Pt = [Math.min(...pts.map((p) => p[0])), Math.min(...pts.map((p) => p[1]))];
       const local = pts.map((p): Pt => [r(p[0] - lo[0]), r(p[1] - lo[1])]);
@@ -331,6 +438,8 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
       ["cantilever", "за связывающей трубой", topStays.cantilever],
       ["inner", "за консолью пояса", stays.inner.map(([x, y]): Pt => [x + T - CH8.w, y])],
     ] as const) {
+      // Спереди створки поднимаются до уровня панелей: угловой верхней косынки нет, остаётся только за связывающей трубой.
+      if (front && key !== "cantilever") continue;
       const pts = pts0.map(mirror);
       const lo: Pt = [Math.min(...pts.map((p) => p[0])), Math.min(...pts.map((p) => p[1]))];
       const local = pts.map((p): Pt => [r(p[0] - lo[0]), r(p[1] - lo[1])]);
@@ -348,6 +457,15 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
       return { lo, local: m.map((p): Pt => [r(p[0] - lo[0]), r(p[1] - lo[1])]) };
     };
     const rect2 = ([ax, ay, bx, by]: [number, number, number, number]) => within([[ax, ay], [bx, by]]).lo;
+    // Перед — дверь (ниже, после цикла): у основной стойки — косынка основания к заду и уголок-вставка (притвор створки).
+    if (front) {
+      const px = c.sx > 0 ? e : W - e - T, py = from(c.sy, y0, y1, T), inner = c.sx > 0 ? px + T : px;
+      const g = POST_GUSSET.a, gt = STAY_T, gx = c.sx > 0 ? inner - POST_GUSSET.off - gt / 2 : inner + POST_GUSSET.off - gt / 2;
+      const tri = (postAtEnd: boolean): Pt[] => (postAtEnd ? [[0, 0], [g, 0], [g, g]] : [[0, 0], [g, 0], [0, g]]);
+      // Косынки «к переду» нет: на её месте — угол створки двери.
+      add(`pgus-${c.id}-2`, `Косынка у основания стойки −${gt}×${g}×${g} (${c.name}, основная, к заду)`, "s8", "yz", g, g, gx, py + T, zPost, { shape: shape(tri(false)) });
+      continue;
+    }
     // Вторая стойка — на передней (задней) стороне у начала скругления: опора — консоль 8П (40 из 60).
     const p2 = rect2([NODE.post[0], NODE.post[1], NODE.post[0] + T, NODE.post[1] + T]);
     // Вторая стойка — в плоскости YZ: в чертёж идёт грань к кассете (по X); у левых — у начала толщины.
@@ -380,16 +498,60 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
     // Кассета: гнутый лист между верхней и нижней плоскостью. Заворачивается по низу и верху каркаса: нижняя плоскость — под нижней
     // угловой косынкой (z 89…92 при косынке на 92…100), верхняя — над верхней (H … H + 3).
     const sheet = within(NODE.cassette), lid = within(NODE.lid);
-    const unfold = 2 * FLANGE + (Math.PI / 2) * (126 - CASSETTE_T / 2);
+    const unfold = 2 * FLANGE + (Math.PI / 2) * (CASSETTE_R - CASSETTE_T / 2);
     add(`cassette-${c.id}`, `Кассета угловая, гнутый лист 3 мм, развёртка ${r(unfold)} (${c.name})`, "k3", "xz", unfold, H - (zPost - STAY_T), sheet.lo[0], sheet.lo[1], zPost - STAY_T, { plan: sheet.local });
     const lw = Math.max(...lid.local.map((p) => p[0])), lh = Math.max(...lid.local.map((p) => p[1]));
     add(`lid-${c.id}-b`, `Кассета угловая, нижняя плоскость 3 мм (${c.name})`, "k3", "xy", lw, lh, lid.lo[0], lid.lo[1], zPost - STAY_T - CASSETTE_T, { shape: shape(lid.local) });
     add(`lid-${c.id}-t`, `Кассета угловая, верхняя плоскость 3 мм (${c.name})`, "k3", "xy", lw, lh, lid.lo[0], lid.lo[1], H, { shape: shape(lid.local) });
+    // Внутренняя угловая кассета (по «узел обвязки-3.dwg», голубое): лист оцинк. 1 мм — дуга R70 вокруг угла пересечения и лапки 30
+    // на внутренних гранях стоек; от верха основания до низа верхнего пояса. Стык с прямыми внутренними кассетами — посередине грани
+    // стойки, под нержавеющей накладкой 30 × 2,5.
+    const inner = within(NODE.inner), innerDev = 2 * INNER.leg + (Math.PI / 2) * (INNER.r - INNER.t / 2);
+    add(`icas-${c.id}`, `Кассета внутренняя угловая, лист оцинк. ${INNER.t} мм, R${INNER.r}, лапки ${INNER.leg}, развёртка ${r(innerDev)} (${c.name})`, "zn1", "xz", r(innerDev), H - T - zPost, inner.lo[0], inner.lo[1], zPost, { plan: inner.local });
+    NODE.innerStrips.forEach((st, i) => {
+      const lo = rect2(st);
+      add(`istrip-${c.id}-${i + 1}`, `Накладка нерж. ${INNER_STRIP.w}×${INNER_STRIP.t} L=${r(H - T - zPost)} (${c.name}, стык внутренних кассет у ${i ? "второй" : "основной"} стойки)`, "ss25", i ? "xz" : "yz", INNER_STRIP.w, H - T - zPost, lo[0], lo[1], zPost);
+    });
     // Утеплитель кассеты: по внутренней дуге листа, от верха нижней угловой косынки до низа верхней; жёсткая плита по R не гнётся —
     // набирается ламелями (полосы из плиты шириной ≈ 50, волокна поперёк) на клею; в модели — слой по дуге, по высоте WOOL.rows кусков.
-    const wool = within(WOOL_CORNER), wh = (H - STAY_T - zPost) / WOOL.rows;
-    for (let row = 0; row < WOOL.rows; row++)
-      add(`wool-${c.id}-${row + 1}`, `Утеплитель угловой кассеты, минвата базальтовая ${WOOL.t}, ламели по дуге, развёртка ${r(WOOL_CORNER_DEV)} (${c.name}, ряд ${row + 1})`, "mw50", "xz", r(WOOL_CORNER_DEV), r(wh), wool.lo[0], wool.lo[1], zPost + row * wh, { plan: wool.local });
+    // Ряды — стыки на отметках перемычек стен.
+    const wool = within(WOOL_CORNER);
+    woolLayout(zPost, H - STAY_T, ANGLE.h).corner.forEach(([z0, z1], row) =>
+      add(`wool-${c.id}-${row + 1}`, `Утеплитель угловой кассеты, минвата базальтовая ${WOOL.t}, ламели по дуге, развёртка ${r(WOOL_CORNER_DEV)} (${c.name}, ряд ${row + 1})`, "mw50", "xz", r(WOOL_CORNER_DEV), r(z1 - z0), wool.lo[0], wool.lo[1], z0, { plan: wool.local }),
+    );
+  }
+
+  // --- Двустворчатая дверь во весь перед (по «двери.dwg», закрыто) ---
+  // Створки — от верха основания до низа верхнего пояса (ниже — основание, выше — пояс и косынки). Створка — кассета: наружный лист 3,
+  // внутренний оцинк. 1, утеплитель 50, вертикальный брусок у притвора — труба 50×50×3. Петли — на наружной кромке боковой стены
+  // (HINGE), створка открывается наружу. Притвор у основной стойки — уголок-вставка нерж. 4 на её передней грани.
+  {
+    // Низ — зазор над основанием, верх — на уровне наружных кассет (верх их отгиба над косынками, H + PANEL.t).
+    const dz = zPost + HINGE.gap, dh = H + PANEL.t - dz;
+    for (const sx of [1, -1] as const) {
+      const side = sx > 0 ? "левая" : "правая", sid = sx > 0 ? "l" : "r";
+      const place = (pts: Pt[]) => {
+        const m = pts.map(([x, y]): Pt => [sx > 0 ? x : W - x, y]), lo: Pt = [Math.min(...m.map((p) => p[0])), Math.min(...m.map((p) => p[1]))];
+        return { lo, local: m.map((p): Pt => [r(p[0] - lo[0]), r(p[1] - lo[1])]) };
+      };
+      const o = place(DOOR.outer), i = place(DOOR.inner), st = place(DOOR.stile), sp = place(DOOR.strip), wl = place(DOOR.wool);
+      add(`door-${sid}`, `Дверь, створка ${side}: наружный лист 09Г2С 3 мм, гнутый (угол R≈130 + прямой участок), развёртка ≈ ${r(halfPerimeter(DOOR.outer))}`, "k3", "xz", r(halfPerimeter(DOOR.outer)), dh, o.lo[0], o.lo[1], dz, { plan: o.local });
+      add(`door-in-${sid}`, `Дверь, створка ${side}: внутренний лист оцинк. ${INNER.t} мм, развёртка ≈ ${r(halfPerimeter(DOOR.inner))}`, "zn1", "xz", r(halfPerimeter(DOOR.inner)), dh, i.lo[0], i.lo[1], dz, { plan: i.local });
+      // Каркас створки: вертикали — брусок притвора и стойка у петель (между нижней и верхней диафрагмой), горизонтали — диафрагмы 3 мм
+      // по сечению створки внизу, вверху и на стыке рядов утеплителя (на высоте плиты минус обжатие, как перемычки стен).
+      const pt = DOOR_FRAME.plate, inside = dh - 2 * pt, layout = woolLayout(dz + pt, dz + dh - pt, pt);
+      add(`door-stile-${sid}`, `Дверь, створка ${side}: брусок у притвора, труба 50×50×3 L=${r(inside)}`, "tube50", "xz", TUBE50.h, inside, st.lo[0], st.lo[1], dz + pt, { alongB: true, plan: st.local });
+      const hs = place(DOOR.hingeStile);
+      add(`door-hstile-${sid}`, `Дверь, створка ${side}: стойка у петель, труба 40×20×2 L=${r(inside)} (дверная часть петель — на резьбовых заклёпках М6)`, "tube4020", "xz", TUBE4020.h, inside, hs.lo[0], hs.lo[1], dz + pt, { alongB: true, plan: hs.local });
+      const dia = place(DOOR.diaphragm), dw = Math.max(...dia.local.map((p) => p[0])), dd = Math.max(...dia.local.map((p) => p[1]));
+      [dz, ...layout.bars, dz + dh - pt].forEach((z, j, all) =>
+        add(`door-dia-${sid}-${j + 1}`, `Дверь, створка ${side}: диафрагма (горизонтальная перемычка) −${pt}, по сечению створки, ${j === 0 ? "низ" : j === all.length - 1 ? "верх" : `+${r(z)}`}`, "k3", "xy", dw, dd, dia.lo[0], dia.lo[1], z, { shape: shape(dia.local) }),
+      );
+      layout.walls.forEach(([z0, z1], row) =>
+        add(`door-wool-${sid}-${row + 1}`, `Дверь, створка ${side}: утеплитель, минвата базальтовая ${WOOL.t}, развёртка ≈ ${r(halfPerimeter(DOOR.wool) - WOOL.t)} (ряд ${row + 1})`, "mw50", "xz", r(halfPerimeter(DOOR.wool) - WOOL.t), r(z1 - z0), wl.lo[0], wl.lo[1], z0, { plan: wl.local }),
+      );
+      add(`fstrip-${sid}`, `Уголок-вставка нерж. 4, 66×24 гнутый, L=${r(H - STAY_T - zPost)} (притвор створки на передней грани основной стойки, ${sx > 0 ? "лево" : "право"})`, "ss4", "xz", 90, H - STAY_T - zPost, sp.lo[0], sp.lo[1], zPost, { plan: sp.local });
+    }
   }
 
   // --- Верхний пояс, трубы 60×60×3 на отметке zTop…H, рез 90°; торцы у обшивки — заглушки −3×60×60 (трубы короче на CAP) ---
@@ -411,18 +573,18 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
   ];
   for (const [id, side, x, under] of [["left", "левый", x0, true], ["right", "правый", x1 - T, false]] as const)
     along.forEach(([part, from, to], i) => {
+      // Передних консолей нет: перед закрывают створки двери до уровня панелей.
+      if (i === 0) return;
       const hole = i === 0 ? RIVET_AXIS - from : i === 2 ? D - RIVET_AXIS - from : null;
       add(`top-${id}-${i + 1}`, belt(side, to - from, `по наружной грани 8П основания (${part})${hole === null ? "" : `, 1 отв. ⌀${RIVET_HOLE}`}`), "tube60", "yz", to - from, T, x, from, zTop, hole === null ? {} : { shape: beltDrilled(to - from, [hole]), drillsUnder: under });
     });
-  // Заглушки торцов у обшивки: связывающих — по бокам, продольных консолей — спереди и сзади.
+  // Заглушки торцов у обшивки: связывающих — по бокам, продольных консолей — сзади (передних консолей нет).
   const cap = (id: string, where: string, plane: Plane, x: number, y: number) => add(`cap-${id}`, `Заглушка торца трубы −3×60×60 (${where})`, "s3", plane, T, T, x, y, zTop);
   cap("front-l", "передняя связывающая, слева", "yz", e, y0);
   cap("front-r", "передняя связывающая, справа", "yz", W - e - CAP, y0);
   cap("back-l", "задняя связывающая, слева", "yz", e, y1 - T);
   cap("back-r", "задняя связывающая, справа", "yz", W - e - CAP, y1 - T);
-  cap("left-f", "левая продольная, спереди", "xz", x0, e);
   cap("left-b", "левая продольная, сзади", "xz", x0, D - e - CAP);
-  cap("right-f", "правая продольная, спереди", "xz", x1 - T, e);
   cap("right-b", "правая продольная, сзади", "xz", x1 - T, D - e - CAP);
 
   // --- Опорная полоса 50×8 по периметру (низ и верх каркаса): под/над отгибами прямых панелей в пролёте ---
@@ -455,7 +617,7 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
   };
   const bands: { id: string; name: string; z0: number; along: "x" | "y"; outward: 1 | -1; len: number }[] = [];
   for (const [lvl, lname, z0] of [["b", "низ", zgN], ["t", "верх", H - STAY_T]] as const)
-    for (const [wid, wname, along, outward] of [["front", "перед", "x", 1], ["back", "зад", "x", -1], ["left", "лево", "y", 1], ["right", "право", "y", -1]] as const)
+    for (const [wid, wname, along, outward] of [["back", "зад", "x", -1], ["left", "лево", "y", 1], ["right", "право", "y", -1]] as const)
       bands.push({ id: `band-${lvl}-${wid}`, name: `${lname}, ${wname}`, z0, along, outward, len: along === "x" ? W : D });
   const bandParts: Part[] = [];
   for (const bd of bands) {
@@ -524,49 +686,80 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
   lugs.forEach(([x, y], i) => add(`boss-${i + 1}`, `Бобышка ⌀50×25, резьба М20 гл. 20 (круг 50), на продольной трубе пояса в ${LIFT.off} от связывающей`, "rd50", "xz", LIFT.h, LIFT.h, x - 25, y - 25, H, { plan: boss }));
   const bandScrews = bandParts.reduce((sum, p) => sum + p.shape!.drills.length, 0);
 
-  // --- Панели прямых участков (по «узел обвязки-1.dwg», розовое): лист 09Г2С 2 мм снаружи каркаса, заворачивается по низу и верху ---
-  // Низ: отгиб 2 мм внутрь на PANEL.ret от наружной грани — под косынками низа каркаса (z zg − 2 … zg); верх: отгиб поверх косынок верха (H … H + 2).
+  // --- Прямые наружные кассеты (по «узел обвязки-1.dwg» и «-3.dwg»): заворачиваются по низу и верху ---
+  // Низ: отгиб PANEL.t внутрь на PANEL.ret от наружной грани — под косынками низа каркаса (z zg − PANEL.t … zg); верх: поверх косынок верха (H … H + PANEL.t).
   // Сечение (поперёк стены от угла габарита, Z от низа отгиба); у задней/правой стены — зеркально.
-  const zg = zPost - STAY_T, pTop = H + SKIN - (zg - SKIN), ret = PANEL.ret;
-  const panelSection: Pt[] = [[0, 0], [ret, 0], [ret, SKIN], [SKIN, SKIN], [SKIN, pTop - SKIN], [ret, pTop - SKIN], [ret, pTop], [0, pTop]];
+  // Прямые наружные кассеты (по «узел обвязки-3.dwg»): лист 09Г2С PANEL.t снаружи каркаса — лицо на PANEL.t за контуром, заподлицо с угловыми;
+  // боковые отгибы FLANGE по граням стоек (под полосу-вставку, на них — отгиб угловой кассеты), по низу и верху — отгибы ret.
+  const zg = zPost - STAY_T, PT = PANEL.t, pTop = H + PT - (zg - PT), ret = PANEL.ret;
+  const panelSection: Pt[] = [[0, 0], [ret, 0], [ret, PT], [PT, PT], [PT, pTop - PT], [ret, pTop - PT], [ret, pTop], [0, pTop]];
   const mirrorU = (sec: Pt[], width: number): Pt[] => sec.map(([u, z]): Pt => [width - u, z]);
-  const panelDev = pTop - 2 * SKIN + 2 * (ret - SKIN);
+  const panelDev = pTop - 2 * PT + 2 * (ret - PT);
   const wall = (id: string, name: string, plane: Plane, len: number, x: number, y: number, z: number, section: Pt[], dev: number, material: string) =>
     add(id, name, material, plane, len, dev, x, y, z, { section });
-  wall("panel-front", `Панель передняя, лист 09Г2С 2 мм с отгибами ${ret} по низу и верху, развёртка ${r(panelDev)}`, "xz", FW, x0, -SKIN, zg - SKIN, panelSection, panelDev, "s2");
-  wall("panel-back", `Панель задняя, лист 09Г2С 2 мм с отгибами ${ret} по низу и верху, развёртка ${r(panelDev)}`, "xz", FW, x0, D + SKIN - ret, zg - SKIN, mirrorU(panelSection, ret), panelDev, "s2");
-  wall("panel-left", `Панель левая, лист 09Г2С 2 мм с отгибами ${ret} по низу и верху, развёртка ${r(panelDev)}`, "yz", FD, -SKIN, y0, zg - SKIN, panelSection, panelDev, "s2");
-  wall("panel-right", `Панель правая, лист 09Г2С 2 мм с отгибами ${ret} по низу и верху, развёртка ${r(panelDev)}`, "yz", FD, W + SKIN - ret, y0, zg - SKIN, mirrorU(panelSection, ret), panelDev, "s2");
-  // Утеплитель прямых панелей — вклеен в панель изнутри: между стойками (у передней и задней стены — между вторыми стойками,
-  // у боковых — между основными), от верха нижних косынок до низа верхних; слой 50 на 5 глубже отгибов панели (45).
+  // Длина по лицу — между наружными гранями боковых отгибов; заготовка — с боковыми отгибами (для раскроя и массы).
+  const PL = FW + 2 * PT, blank = PL + 2 * (FLANGE + PT) - 2 * PT;
+  const panel = (id: string, side: string, plane: Plane, x: number, y: number, mirror: boolean) =>
+    add(id, `Кассета наружная ${side}, лист 09Г2С ${PT} мм, отгибы ${FLANGE} по бокам и ${ret} по низу и верху, заготовка ${r(blank)}×${r(panelDev)}`, "k3", plane, PL, panelDev, x, y, zg - PT, {
+      section: mirror ? mirrorU(panelSection, ret) : panelSection,
+      sides: mirror ? { from: ret - FLANGE - PT, to: ret, t: PT } : { from: 0, to: FLANGE + PT, t: PT },
+      shape: { outer: [[0, 0], [blank, 0], [blank, panelDev], [0, panelDev]], cutouts: [], pockets: [], drills: [] },
+    });
+  panel("panel-back", "задняя", "xz", x0 - PT, D + PT - ret, true);
+  panel("panel-left", "левая", "yz", -PT, y0 - PT, false);
+  panel("panel-right", "правая", "yz", W + PT - ret, y0 - PT, true);
+  /** Шпилек крепления утеплителя на шкаф (4 стены). */
+  let woolPins = 0;
+  // Горизонтальные перемычки стен — уголок 50×50×5 между стойками (у передней и задней стены — между вторыми стойками,
+  // у боковых — между основными), рез 90°: вертикальная полка (обушок) — по контуру каркаса, под панель; горизонтальная — внизу,
+  // внутрь на толщину утеплителя: нижняя плита упирается в неё снизу, верхняя стоит на ней. Низ — на высоте плиты минус обжатие
+  // от верха нижних косынок (проём 1180 под плиту 1200). Делят утеплитель на ряды и подпирают панель посередине высоты.
+  // Утеплитель прямых панелей — вклеен в панель изнутри между стойками и перемычками; слой 50 на 5 глубже отгибов панели (45).
   {
-    const wh = (H - STAY_T - zPost) / WOOL.rows, lx = FW - 2 * T, ly = FD - 2 * T;
-    for (let row = 0; row < WOOL.rows; row++) {
-      const z = zPost + row * wh, name = (side: string, len: number) => `Утеплитель панели ${side}, минвата базальтовая ${WOOL.t}, ${r(len)}×${r(wh)} (ряд ${row + 1})`;
-      add(`wool-front-${row + 1}`, name("передней", lx), "mw50", "xz", lx, r(wh), x0 + T, e, z);
+    const lx = FW - 2 * T, ly = FD - 2 * T, A = ANGLE.h, layout = woolLayout(zPost, H - STAY_T, A);
+    // Передней стены нет (фасад): задняя и две боковые.
+    woolPins = layout.walls.reduce((sum, [z0, z1]) => sum + (pinAxes(lx).length + 2 * pinAxes(ly).length) * pinAxes(z1 - z0).length, 0);
+    const barName = (side: string, len: number, z: number) => `Перемычка ${side} стены, уголок 50×50×5 L=${r(len)}, рез 90°, низ +${r(z)}`;
+    layout.bars.forEach((z, i) => {
+      add(`bar-back-${i + 1}`, barName("задней", lx, z), "an50", "xz", lx, A, x0 + T, D - e - ANGLE.w, z, { openBack: true });
+      add(`bar-left-${i + 1}`, barName("левой", ly, z), "an50", "yz", ly, A, e, y0 + T, z);
+      add(`bar-right-${i + 1}`, barName("правой", ly, z), "an50", "yz", ly, A, W - e - ANGLE.w, y0 + T, z, { openBack: true });
+    });
+    layout.walls.forEach(([z, z1], row) => {
+      const wh = z1 - z, name = (side: string, len: number) => `Утеплитель панели ${side}, минвата базальтовая ${WOOL.t}, ${r(len)}×${r(wh)} в проёме (ряд ${row + 1})`;
       add(`wool-back-${row + 1}`, name("задней", lx), "mw50", "xz", lx, r(wh), x0 + T, D - e - WOOL.t, z);
       add(`wool-left-${row + 1}`, name("левой", ly), "mw50", "yz", ly, r(wh), e, y0 + T, z);
       add(`wool-right-${row + 1}`, name("правой", ly), "mw50", "yz", ly, r(wh), W - e - WOOL.t, y0 + T, z);
-    }
+    });
+  }
+  // Внутренние прямые кассеты (по «узел обвязки-3.dwg», голубое): лист оцинк. 1 мм по внутренним граням стоек — от середины грани
+  // одной стойки до середины другой (стыки с угловыми внутренними — под накладками), от верха основания до низа верхнего пояса.
+  {
+    const ih = H - T - zPost, ix = W - 2 * (x0 + T / 2), iy = D - 2 * (y0 + T / 2);
+    const name = (side: string, len: number) => `Кассета внутренняя ${side}, лист оцинк. ${INNER.t} мм, ${r(len)}×${r(ih)}`;
+    add("ipanel-back", name("задняя", ix), "zn1", "xz", ix, ih, x0 + T / 2, D - T - INNER.t, zPost);
+    // Спереди — от передней грани основной стойки (по «контур дна.dwg» rev3: фасадная внутренняя кассета подходит к ней).
+    const iyF = D - y0 - (y0 + T / 2);
+    add("ipanel-left", name("левая", iyF), "zn1", "yz", iyF, ih, T, y0, zPost);
+    add("ipanel-right", name("правая", iyF), "zn1", "yz", iyF, ih, W - T - INNER.t, y0, zPost);
   }
 
   // --- Декоративная накладка цоколя (синее): гнутый лист 2 мм, по всему периметру; наружная грань — заподлицо с панелью ---
   // Профиль: нижняя полка PLINTH.leg под низом основания (z −2…0), стенка до zg − 22, скос внутрь 15 на 20, верхняя полка до PANEL.ret под отгибом панели.
-  const plinthSection: Pt[] = [[SKIN, SKIN], [PLINTH.leg + SKIN, SKIN], [PLINTH.leg + SKIN, 0], [0, 0], [0, zg - 20], [15, zg], [ret, zg], [ret, zg - SKIN], [16, zg - SKIN], [SKIN, zg - 20.67]];
-  const plinthW = PLINTH.leg + SKIN, plinthDev = PLINTH.leg + (zg - 22) + Math.hypot(15, 20) + (ret - 15);
-  wall("plinth-front", `Цоколь передний, лист 2 мм гнутый, развёртка ${r(plinthDev)}`, "xz", FW, x0, -SKIN, -SKIN, plinthSection, plinthDev, "s2");
-  wall("plinth-back", `Цоколь задний, лист 2 мм гнутый, развёртка ${r(plinthDev)}`, "xz", FW, x0, D + SKIN - plinthW, -SKIN, mirrorU(plinthSection, plinthW), plinthDev, "s2");
-  wall("plinth-left", `Цоколь левый, лист 2 мм гнутый, развёртка ${r(plinthDev)}`, "yz", FD, -SKIN, y0, -SKIN, plinthSection, plinthDev, "s2");
-  wall("plinth-right", `Цоколь правый, лист 2 мм гнутый, развёртка ${r(plinthDev)}`, "yz", FD, W + SKIN - plinthW, y0, -SKIN, mirrorU(plinthSection, plinthW), plinthDev, "s2");
+  // Верх цоколя — под отгибом кассеты (PANEL.t): полка на (PANEL.t − SKIN) ниже, чем под отгибом 2 мм.
+  const zq = zg - (PT - SKIN);
+  const plinthSection: Pt[] = [[SKIN, SKIN], [PLINTH.leg + SKIN, SKIN], [PLINTH.leg + SKIN, 0], [0, 0], [0, zq - 20], [15, zq], [ret, zq], [ret, zq - SKIN], [16, zq - SKIN], [SKIN, zq - 20.67]];
+  const plinthW = PLINTH.leg + SKIN, plinthDev = PLINTH.leg + (zq - 22) + Math.hypot(15, 20) + (ret - 15);
+  wall("plinth-back", `Цоколь задний, лист 2 мм гнутый, развёртка ${r(plinthDev)}`, "xz", FW, x0, D + PT - plinthW, -SKIN, mirrorU(plinthSection, plinthW), plinthDev, "s2");
+  wall("plinth-left", `Цоколь левый, лист 2 мм гнутый, развёртка ${r(plinthDev)}`, "yz", FD, -PT, y0, -SKIN, plinthSection, plinthDev, "s2");
+  wall("plinth-right", `Цоколь правый, лист 2 мм гнутый, развёртка ${r(plinthDev)}`, "yz", FD, W + PT - plinthW, y0, -SKIN, mirrorU(plinthSection, plinthW), plinthDev, "s2");
   // Углы цоколя — гнутая стенка по R (заподлицо с прямыми); полки и скос на дуге — вытяжкой или сегментами (замечание n-plinth).
-  const pR = INSET + SKIN, pBend = (Math.PI / 2) * (INSET + SKIN / 2);
+  const pR = INSET + PT, pBend = (Math.PI / 2) * (pR - SKIN / 2);
   for (const a of [
-    { id: "fl", name: "перед-лево", cx: x0, cy: y0, from: 180, y: -SKIN },
-    { id: "fr", name: "перед-право", cx: x1, cy: y0, from: 270, y: -SKIN },
     { id: "br", name: "зад-право", cx: x1, cy: y1, from: 0, y: y1 },
     { id: "bl", name: "зад-лево", cx: x0, cy: y1, from: 90, y: y1 },
   ])
-    add(`plinth-r-${a.id}`, `Цоколь угловой, лист 2 мм гнутый R${pR} (${a.name}), развёртка стенки ${r(pBend)}`, "s2", "xz", pBend, zg, a.cx > W / 2 ? W + SKIN - pBend : -SKIN, a.y, -SKIN, { arc: { cx: a.cx, cy: a.cy, r: pR, from: a.from } });
+    add(`plinth-r-${a.id}`, `Цоколь угловой, лист 2 мм гнутый R${pR} (${a.name}), развёртка стенки ${r(pBend)}`, "s2", "xz", pBend, zg, a.cx > W / 2 ? W + PT - pBend : -PT, a.y, -SKIN, { arc: { cx: a.cx, cy: a.cy, r: pR, from: a.from } });
 
   // --- Сварка (ГОСТ 14771-76, CO₂, Св-08Г2С): длины швов на шкаф ---
   const welds = {
@@ -590,18 +783,17 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
   // --- Крепление кассет: винт изнутри кассеты через отгиб → полосу-вставку → стенку стойки, в резьбовую заклёпку М6 в стойке ---
   // Шаг по высоте FIX.step, крайние точки — FIX.edge от торцов отгиба; низ кассеты — 2 винта в резьбу М6 в угловой косынке-опоре 8 мм.
   const rivets = 4 * 2 * perFlange, bottom = 4 * 2;
-  // Лента — на всю высоту отгиба кассеты.
+  // Лента — на всю высоту отгиба угловой кассеты.
   const tapeLen = H - zPost - 2 * CASSETTE_T;
-// Лента — на всю высоту отгиба кассеты.  const tapeLen = H - zPost - 2 * CASSETTE_T;
   const items: Item[] = [
     { id: "wire", name: "Проволока сварочная Св-08Г2С ⌀1,0", unit: "кг", qty: Math.max(1, Math.ceil(wire / 1000)), price: 250 },
     { id: "rivnut", name: "Заклёпка резьбовая М6, цилиндрический бортик, полушестигранная, нерж. A2 (крепление кассет к стойкам)", unit: "шт", qty: rivets, price: 28 },
-    { id: "screw", name: "Винт М6×25 ISO 7380 A2 (кассета → полоса → бортик заклёпки; длина — по каталогу заклёпки)", unit: "шт", qty: rivets, price: 0 },
+    { id: "screw", name: "Винт М6×30 ISO 7380 A2 (угловая кассета → лента → полоса → лента → отгиб прямой кассеты → заклёпка; длина — по каталогу заклёпки)", unit: "шт", qty: rivets, price: 0 },
     { id: "screw-bottom", name: "Винт М6×12 ISO 7380 A2 (низ кассеты в косынку-опору, резьба в косынке)", unit: "шт", qty: bottom, price: 0 },
     { id: "washer-epdm", name: "Шайба М6 с EPDM (под головки винтов кассет)", unit: "шт", qty: rivets + bottom, price: 0 },
-    // Ленты — по 2 полосы на отгиб (у кромок, зазор под бортик и винт), на всю высоту отгиба; 4 кассеты × 2 отгиба.
-    { id: "tape-under", name: `Лента EPDM самоклеящаяся ${TAPE.w}×${fmtMm(TAPE.under)} (полоса-вставка ↔ стойка, толщина = бортик заклёпки)`, unit: "м", qty: Math.ceil((4 * 2 * 2 * tapeLen) / 1000), price: 0 },
-    { id: "tape-over", name: `Лента EPDM самоклеящаяся ${TAPE.w}×${fmtMm(TAPE.over)} (полоса-вставка ↔ отгиб кассеты)`, unit: "м", qty: Math.ceil((4 * 2 * 2 * tapeLen) / 1000), price: 0 },
+    // Уплотнительные ленты — по обе стороны полосы-вставки, по 2 полосы у кромок отгиба, на всю высоту отгиба; 4 угла × 2 отгиба.
+    { id: "tape-under", name: `Лента EPDM самоклеящаяся ${TAPE.w}×${fmtMm(TAPE.t)} (отгиб прямой кассеты ↔ полоса-вставка)`, unit: "м", qty: Math.ceil((4 * 2 * 2 * tapeLen) / 1000), price: 0 },
+    { id: "tape-over", name: `Лента EPDM самоклеящаяся ${TAPE.w}×${fmtMm(TAPE.t)} (полоса-вставка ↔ отгиб угловой кассеты)`, unit: "м", qty: Math.ceil((4 * 2 * 2 * tapeLen) / 1000), price: 0 },
     // Отгибы панелей и полка цоколя — к опорной полосе: снизу винт через полку цоколя и отгиб в резьбу полосы, сверху — через отгиб.
     { id: "screw-band-b", name: "Винт М6×16 ISO 7380 A2 (полка цоколя + отгиб панели → резьба в опорной полосе, низ)", unit: "шт", qty: bandScrews / 2, price: 0 },
     { id: "screw-band-t", name: "Винт М6×12 ISO 7380 A2 (отгиб панели → резьба в опорной полосе, верх)", unit: "шт", qty: bandScrews / 2, price: 0 },
@@ -612,6 +804,15 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
     { id: "ground-bolt", name: "Болт М10×40 оцинк. + гайка и шайбы (заземление, ГОСТ 21130)", unit: "шт", qty: 1, price: 0 },
     { id: "eyebolt", name: "Рым-болт М20 ГОСТ 4751-73 (инвентарный, на время подъёма)", unit: "шт", qty: 4, price: 0 },
     { id: "boss-plug", name: "Болт-заглушка М20×20 ГОСТ 7798-70 + шайба EPDM (в бобышки после монтажа)", unit: "шт", qty: 4, price: 0 },
+    // Дверь: петли на кромке боковой стены (по HINGE.perLeaf на створку), уплотнитель по периметру створок, затвор и шпингалеты.
+    { id: "door-hinge", name: `Петля скрытая 180° для металлических шкафов (тип EMKA/DIRAK), под створку ≈ 40 кг, ${HINGE.perLeaf} на створку — модель по каталогу под ось двери`, unit: "шт", qty: 2 * HINGE.perLeaf, price: 0 },
+    { id: "hinge-rivnut", name: "Заклёпка резьбовая М6, цилиндрический бортик, A2 (крепление петель к передней грани основной стойки — в её отверстия ⌀9)", unit: "шт", qty: 2 * HINGE.perLeaf, price: 28 },
+    { id: "door-seal", name: "Уплотнитель дверной EPDM (по периметру створок и в притворе)", unit: "м", qty: Math.ceil((2 * (2 * (H - T - zPost) + 2 * halfPerimeter(DOOR.outer) / 2) + (H - T - zPost)) / 1000), price: 0 },
+    { id: "door-lock", name: "Замок/затвор двери с ключом (активная створка)", unit: "шт", qty: 1, price: 0 },
+    { id: "door-bolt", name: "Шпингалет торцевой (пассивная створка, верх и низ)", unit: "шт", qty: 2, price: 0 },
+    // Крепление утеплителя стен: шпильки к панели изнутри (конденсаторная сварка) и шайбы — по раскладке pinAxes на каждую плиту.
+    { id: "wool-pin", name: `Шпилька изоляционная приварная ⌀${PIN.d}, L=${PIN.len} (конденсаторная сварка, к панели изнутри)`, unit: "шт", qty: woolPins, price: 0 },
+    { id: "wool-washer", name: `Шайба самоконтрящаяся ⌀${PIN.washer} под шпильку ⌀${PIN.d}`, unit: "шт", qty: woolPins, price: 0 },
   ];
 
   const at = (x: number, y: number, z: number): [number, number, number] => [x, y, z];
@@ -623,8 +824,8 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
     {
       id: "n-size",
       kind: "info",
-      title: `Несущий каркас ${W} × ${D} со скруглениями R${INSET}, высота ${H}; по обшивке ${W + 2 * SKIN} × ${D + 2 * SKIN}`,
-      detail: `По чертежу «контур дна.dwg», контур — несущий каркас (принято): концы швеллеров, косынки-опоры, стойки и верхний пояс доходят до контура, обшивка ${SKIN} мм снаружи — габарит по обшивке ${W + 2 * SKIN} × ${D + 2 * SKIN}; швеллеры основания — на ${INSET} от контура. Стойка L = ${r(post)} = ${H} − 100 (основание) − 60 (верхний пояс). Обшивка: прямые участки ${FW} (временно, 2 мм снаружи каркаса), углы — кассеты узла обвязки.`,
+      title: `Несущий каркас ${W} × ${D} со скруглениями R${INSET}, высота ${H}; по наружным кассетам ${W + 2 * PANEL.t} × ${D + 2 * PANEL.t}`,
+      detail: `По чертежу «контур дна.dwg», контур — несущий каркас (принято): концы швеллеров, косынки-опоры, стойки и верхний пояс доходят до контура, наружные кассеты ${PANEL.t} мм снаружи — габарит по ним ${W + 2 * PANEL.t} × ${D + 2 * PANEL.t}; швеллеры основания — на ${INSET} от контура. Стойка L = ${r(post)} = ${H} − 100 (основание) − 60 (верхний пояс). Обшивка — наружные кассеты (прямые и угловые) и внутренние кассеты 1 мм по «узел обвязки-3.dwg».`,
       points: [],
     },
     {
@@ -660,8 +861,9 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
       id: "n-corner-node",
       title: "Типовой угол обшивки: кассета, полосы-вставки, вторая стойка",
       detail:
-        `По чертежу «узел обвязки.dwg» (угол зад-лево, остальные — зеркально). Кассета — гнутый лист 3 мм: наружная дуга R≈126, два отгиба по ${FLANGE} внутрь (на чертеже узла — 60, сужены); верхняя и нижняя плоскость 3 мм; заворачивается по низу и верху каркаса: нижняя плоскость под нижней угловой косынкой, верхняя — над верхней (z ${zg - CASSETTE_T}…${H + CASSETTE_T}). Отгибы ложатся через нержавеющие полосы-вставки ${STRIP.w}×${STRIP.t} (по глубине отгиба: выступ 5 + отгиб ${FLANGE}) на грани стоек: основной (по её передней/задней грани) и второй стойки 60×60 на передней/задней стороне (x 130…190); полосы выступают за контур на 5 мм. ` +
-        `Уточнить: толщина верхней и нижней плоскости (в модели 3), материал кассет (в модели 09Г2С), крепление отгибов к стойкам через полосу (винты/заклёпки — нержавейку к чёрной стали не варить: контактная коррозия, нужна изолирующая прокладка), высота полос (в модели ${zPost}…${H}).`,
+        `По чертежу «узел обвязки-3.dwg» (угол зад-лево, остальные — зеркально). Наружные кассеты: угловая — гнутый лист 3 мм, дуга R≈${CASSETTE_R} (лицо на ${PANEL.t} за контуром, заподлицо с прямыми), два отгиба по ${FLANGE}, верхняя и нижняя плоскость 3 мм (z ${zg - CASSETTE_T}…${H + CASSETTE_T}); прямые — лист 3 мм с боковыми отгибами ${FLANGE} по граням стоек и отгибами ${PANEL.ret} по низу и верху. На грани стойки пакет: отгиб прямой кассеты 3 → лента EPDM ${TAPE.t} → полоса-вставка ${STRIP.w}×${STRIP.t} (выступ за контур 5) → лента ${TAPE.t} → отгиб угловой 3. Габарит по наружным кассетам ${W + 2 * PANEL.t} × ${D + 2 * PANEL.t}. ` +
+        `Внутренние кассеты — лист оцинк. ${INNER.t} мм по внутренним граням стоек: угловая — дуга R${INNER.r} вокруг угла пересечения и лапки ${INNER.leg}, прямые — от середины грани одной стойки до середины другой; стыки — под накладками нерж. ${INNER_STRIP.w}×${INNER_STRIP.t}; от верха основания (+${zPost}) до низа верхнего пояса (+${H - T}). Между наружной и внутренней — утеплитель 50 и зазор 10. ` +
+        `Уточнить: крепление внутренних кассет и накладок (в модели не задано — предложение: заклёпки вытяжные нерж. 4,8 через накладку и обе лапки в стойку, отверстия ⌀4,9 в стойках на ЧПУ, шаг ≤ 300), материал внутренних (в модели оцинковка 1 мм), толщина накладки (по чертежу 2,5).`,
       kind: "risk",
       points: posts(zPost + 300),
     },
@@ -673,7 +875,7 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
         `Принято: заклёпка резьбовая М6 с цилиндрическим бортиком, полушестигранная, нерж. A2 (28 ₽/шт). Винт М6 ISO 7380 A2 с шайбой EPDM — изнутри кассеты: отгиб → полоса-вставка → стенка стойки, в заклёпку. На каждый отгиб ${perFlange} шт.: ${perPost} в стойке (шаг ≤ ${FIX.step}, от ${FIX.edge} над низом кассеты до ${FIX.edge} под верхним поясом) и 1 в трубе верхнего пояса (по оси трубы, z ${beltZ}) — выше стойки отгиб лежит на поясе; ось — в ${RIVET_AXIS} мм от наружной грани трубы (бортик ⌀13 — на плоской части грани, ключу под винтом ≈ 54 мм). Отверстия ⌀${RIVET_HOLE} — в модели (сверловка стоек и труб пояса, попадают в DXF деталей). Низ кассеты — 2 винта М6 в резьбу в косынке-опоре 8 мм. ` +
         `Отверстия в стойках — после сварки каркаса, по накладному шаблону от верха основания; при окраске закрыть заглушками; заклёпки — после окраски, заклёпочником с упором хода. ` +
         `Проверить по каталогу: диапазон захвата должен включать стенку 3 мм с запасом; отверстие под полушестигранное тело (круглое ⌀9 или шестигранное) и обжатие; глухая или открытая — открытая разгерметизирует стойку (стойки закрыты сверху и снизу), нужна глухая или герметик на резьбу. ` +
-        `Стыковка с полосой-вставкой: цилиндрический бортик заклёпки (≈1,5 мм) — дистанционная шайба. Лента EPDM под полосой той же толщины (1,5) — 2 полосы ${TAPE.w} мм у кромок отгиба (0…${TAPE.w} и ${FLANGE - TAPE.w}…${FLANGE} от наружной грани), между ними зазор под бортик и винт — вырубать не нужно; полоса лежит на ленте и опирается на бортики — затяжка металл по металлу (A2 по AISI 304 — одна сталь), лента не пережимается. В полосе — только под винт: овал 6,6×12 вдоль полосы (разное удлинение нержавейки и стали). Между полосой и отгибом — так же 2 полосы ленты ${TAPE.w}×1. Пакет под головкой: шайба 2 + отгиб 3 + лента 1 + полоса 4 + бортик 1,5 + стенка 3 = 14,5 → винт ≈ М6×25 (конец — в резьбе заклёпки, не в дно глухой). Выносной элемент «Б» — лист КМ.`,
+        `Пакет по «узел обвязки-3.dwg» с уплотнительными лентами: стенка стойки → боковой отгиб прямой наружной кассеты ${PANEL.t} (отверстие ⌀13 — в нём бортик заклёпки 1,5) → лента EPDM ${TAPE.w}×${TAPE.t} → полоса-вставка ${STRIP.t} (овал 6,6×12 вдоль полосы) → лента ${TAPE.w}×${TAPE.t} → отгиб угловой кассеты ${CASSETTE_T} (овал 7×10) → шайба EPDM 2 → головка. Ленты — по 2 полосы ${TAPE.w} у кромок отгиба (0…${TAPE.w} и ${FLANGE - TAPE.w}…${FLANGE}), между ними зазор под крепёж; они уплотняют стык и отделяют нержавейку от окрашенной стали. Угловая кассета отодвинута от стойки на толщину лент (${SEAL}). Пакет под головкой 14 + стенка 3 → винт М6×30: конец на 16 за гранью стойки — в резьбовой части заклёпки (9…17); длину проверить по каталогу заклёпки (глухая — не упереть в дно). Выносной элемент «Б» — лист КМ 1.`,
       // Метки — заклёпки одного угла (перед-лево): по грани основной стойки и второй стойки.
       points: [...rivetZ, beltZ].flatMap((z) => [at(RIVET_AXIS, y0, z), at(x0, RIVET_AXIS, z)]),
     },
@@ -683,8 +885,8 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
       title: "Низ и верх панелей: отгибы под нижние и над верхними косынками каркаса, цоколь",
       detail:
         `По «узел обвязки-1.dwg». Косынки каркаса — внизу (заподлицо с верхом основания, z ${zg}…${zPost}) и вверху (заподлицо с верхом пояса, z ${H - STAY_T}…${H}), одинаковые по форме; верхняя у консоли — за связывающей трубой, у второй стойки — за консолью пояса. ` +
-        `Панели прямых участков — лист 2 мм снаружи каркаса, заворачиваются: внизу отгиб ${ret} от наружной грани под косынку (z ${zg - SKIN}…${zg}), вверху — поверх (z ${H}…${H + SKIN}); развёртка ${r(panelDev)}. Угловые кассеты так же: нижняя плоскость под косынкой, верхняя — над. ` +
-        `Цоколь — гнутый лист 2 мм по периметру, заподлицо с панелью: нижняя полка ${PLINTH.leg} под основанием (z −2…0), стенка, скос 15 на 20, верхняя полка до ${ret} под отгибом панели (z ${zg - 2 * SKIN}…${zg - SKIN}).`,
+        `Прямые наружные кассеты — лист ${PT} мм снаружи каркаса, заворачиваются: внизу отгиб ${ret} от наружной грани под косынку (z ${zg - PT}…${zg}), вверху — поверх (z ${H}…${H + PT}); развёртка по высоте ${r(panelDev)}. Угловые кассеты так же: нижняя плоскость под косынкой, верхняя — над. ` +
+        `Цоколь — гнутый лист 2 мм по периметру, заподлицо с наружными кассетами: нижняя полка ${PLINTH.leg} под основанием (z −2…0), стенка, скос 15 на 20, верхняя полка до ${ret} под отгибом кассеты (z ${zq - 2 * SKIN}…${zq - SKIN}).`,
       points: [],
     },
     {
@@ -718,7 +920,7 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
       id: "n-plinth",
       kind: "risk",
       title: "Цоколь и отгибы угловой кассеты на дуге",
-      detail: `На углах цоколь и кассета гнутые по радиусу (цоколь R${pR}, кассета R≈126): полки и скос цоколя, отгибы кассеты по дуге гибкой не делаются — нужна вытяжка (штамп/роликовый отбортовщик) или сегменты с подрезкой и сваркой; у кассеты сейчас — приварные верхняя и нижняя плоскости. В модели угловой цоколь — только гнутая стенка. Наружная дуга цоколя (R${pR} от угла каркаса) и кассеты (R≈126) не совпадают на ~2 мм — согласовать.`,
+      detail: `На углах цоколь и кассета гнутые по радиусу (цоколь R${pR}, кассета R≈${CASSETTE_R}): полки и скос цоколя, отгибы кассеты по дуге гибкой не делаются — нужна вытяжка (штамп/роликовый отбортовщик) или сегменты с подрезкой и сваркой; у кассеты сейчас — приварные верхняя и нижняя плоскости. В модели угловой цоколь — только гнутая стенка. Наружная дуга цоколя (R${pR} от угла каркаса) и кассеты (R≈126) не совпадают на ~2 мм — согласовать.`,
       points: corners.map((c) => at(c.sx > 0 ? 40 : W - 40, c.sy > 0 ? 40 : D - 40, 40)),
     },
     {
@@ -735,7 +937,7 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
       id: "n-ground",
       title: "Заземление панелей обшивки не предусмотрено",
       detail:
-        "Обязательно для газового шкафа. Изолирующие шайбы и лента (EPDM под полосой-вставкой и под головками винтов) разрывают электрический контакт панели с каркасом, а панель должна быть заземлена — от статики и по требованиям к оборудованию. " +
+        "Обязательно для газового шкафа. Отгиб прямой кассеты лежит на стойке через покрытие, угловая отделена от полосы лентами EPDM, шайбы EPDM под головками изолируют крепёж — надёжного электрического контакта кассет с каркасом нет, а кассеты должны быть заземлены — от статики и по требованиям к оборудованию. " +
         "На каждую панель нужна перемычка: медный многожильный провод 6 мм² с наконечниками, от отгиба на болт заземления каркаса. Второй вариант — один крепёж с зубчатой контактной шайбой, но перемычка надёжнее и проще проверяется. " +
         "Болт заземления каркаса есть (узел Е: пластина на левом 8П, болт М10). Не заведены: места перемычек на кассетах и панелях, перемычки в закупе.",
       // Метки — на угловых кассетах, посередине высоты.
@@ -751,19 +953,33 @@ export function evaporatorBase(size: CabinetSize = FIRST): AppState {
     },
     {
       id: "n-wall",
-      title: "Прямые участки обшивки — временно, без кассет",
-      detail: `Прямые участки обшивки (${FW} мм) пока листом 2 мм снаружи каркаса — до проработки прямых кассет и их размеров. Боковая обшивка сверху между стойками без опоры (продольные трубы пояса в ${INSET - e} мм от неё). Утеплитель — см. замечание об утеплителе кассет.`,
+      title: "Прямые наружные кассеты: размеры серии",
+      detail: `Прямые наружные кассеты (лицо ${FW + 2 * PT} мм, лист ${PT}, боковые отгибы ${FLANGE}) — одна на стену; ширина зависит от габарита шкафа. Опора лица посередине высоты — обушки перемычек У1, вверху — отгиб на косынках и опорной полосе; боковая кассета сверху между стойками (продольные трубы пояса в ${INSET - e} мм от неё) — без опоры. Утеплитель — см. замечание об утеплителе кассет.`,
       kind: "risk",
       points: [at(W / 2, 0, H / 2), at(W / 2, D, H / 2)],
+    },
+    {
+      id: "n-facade",
+      kind: "risk",
+      title: "Дверь: две створки во весь перед, открываются наружу",
+      detail:
+        `По «двери.dwg» (закрыто) и «контур дна.dwg» rev3 (открыто на ${HINGE.open}°). Контур каркаса — 900; передних вторых стоек, угловых и прямой передней кассеты нет — перед закрывают створки. ` +
+        `Створка — кассета: наружный лист 3 мм (угол по дуге R≈130 и прямой участок до середины), внутренний оцинк. 1, утеплитель 50; от +${zPost + HINGE.gap} (зазор над основанием) до +${H + PANEL.t} — верх на уровне наружных кассет; передние консоли верхнего пояса, их заглушки и угловые верхние косынки спереди убраны. Зазор между створками 4. ` +
+        `Каркас створки: вертикали — брусок притвора 50×50×3 и стойка у петель 40×20×2 (в слое утеплителя у оси, на ней — дверная часть петель на резьбовых заклёпках М6); горизонтальные перемычки — диафрагмы −${DOOR_FRAME.plate} по сечению створки внизу, вверху и на стыке рядов утеплителя (на высоте плиты минус обжатие). Перемычки нужны: петли с одной стороны — створку (≈ 44 кг, центр масс ≈ 0,22 м от оси) скручивает и тянет вниз; диафрагмы, приваренные к наружному листу и обеим вертикалям, замыкают коробку на кручение, держат низ и верх створки (они же крышки) и ряды утеплителя. Утеплитель у стойки у петель — с вырезом. ` +
+        `Петли — скрытые 180°, ось на наружной кромке боковой стены (x −2,8, y 123 от переднего левого угла), по ${HINGE.perLeaf} на створку на отметках +${HINGE.holes.map((k) => r(rivetZ[k])).join(", +")} — по отверстиям ⌀9 передней грани основной стойки (рамная часть петли — на резьбовой заклёпке М6 в этом отверстии; стойки остаются одной деталью); в зоне петли — вырезы в отгибе створки и в уголке-вставке по каталогу петли, корпус петли — в углу створки (утеплитель выбрать). Зазор створки над основанием ${HINGE.gap}; притвор — на уголке-вставке нерж. 4 на передней грани основной стойки. Косынки основания стоек «к переду» спереди убраны — на их месте угол створки. ` +
+        `Не задано: модель скрытой петли (по каталогу — вынос оси 7 от грани стойки и 3 за боковую стену; если второе крепёжное отверстие — добавить его во все стойки на ЧПУ), затвор и шпингалеты, уплотнитель по периметру, верх и низ створок (крышки) и закрытие зоны под дверью (основание 0…100 спереди открыто), упор-ограничитель открывания, заземление створок перемычками.`,
+      points: [at(HINGE.at[0], HINGE.at[1], H / 2), at(W - HINGE.at[0], HINGE.at[1], H / 2), at(W / 2, -2, H / 2)],
     },
     {
       id: "n-wool",
       kind: "info",
       title: `Утеплитель кассет и панелей: жёсткая базальтовая минвата 80–100 кг/м³, ${WOOL.t} мм`,
       detail:
-        `Плиты НГ (негорючие), гидрофобизированные, 1000×600×${WOOL.t}; по высоте — ${WOOL.rows} ряда по ${r((H - STAY_T - CH10.h) / WOOL.rows)} (от верха нижних косынок, +${CH10.h}, до низа верхних, +${H - STAY_T}). ` +
+        `Плиты НГ (негорючие), гидрофобизированные, ${WOOL.slab[0]}×${WOOL.slab[1]}×${WOOL.t}, длиной по высоте; от верха нижних косынок (+${CH10.h}) до низа верхних (+${H - STAY_T}). ` +
+        `Горизонтальные перемычки стен (уголок 50×50×5 ГОСТ 8509-93: обушок по контуру под панель, горизонтальная полка внизу внутрь на 50; низ +${woolLayout(CH10.h, H - STAY_T, ANGLE.h).bars.map(r).join(", +")}) — по высоте плиты минус ${WOOL.squeeze} на обжатие: проём ${WOOL.slab[0] - WOOL.squeeze} под плиту ${WOOL.slab[0]} — плита ставится враспор без клея по высоте; над перемычкой — плита, отрезанная по проёму + ${WOOL.squeeze}. ` +
+        `По ширине: проём ${FW - 2 * T} между стойками — плиту ${WOOL.slab[1]} обрезать до ${FW - 2 * T + WOOL.squeeze} (обжатие ${WOOL.squeeze}). ` +
         `Угловые кассеты: слой по внутренней дуге листа (R≈127 → R≈77); жёсткая плита по радиусу не гнётся — набирать ламелями (полосы из плиты шириной ≈ 50, волокна поперёк листа) на негорючем клею, развёртка набора по средней линии ≈ ${r(WOOL_CORNER_DEV)}. ` +
-        `Прямые панели: плита вклеивается в панель изнутри между стойками (${FW - 2 * T} в свету), слой ${WOOL.t} на ${WOOL.t - PANEL.ret} глубже отгибов ${PANEL.ret}; панель с утеплителем ставится как кассета. ` +
+        `Прямые панели: после монтажа панели плиты ставятся изнутри враспор между стойками (${FW - 2 * T} в свету), косынками и перемычкой и накалываются на шпильки ⌀${PIN.d} L=${PIN.len}, приваренные к панели изнутри конденсаторной сваркой до грунтования (шаг ≤ ${PIN.step}, не менее 2 по стороне плиты — ${woolPins} шт. на шкаф); шайбы ⌀${PIN.washer} — до обжатия плиты на 3–5, выступ шпилек скусить (по принципу ШИУ-01-МК лист 10; КМ лист 11). Слой ${WOOL.t} на ${WOOL.t - PANEL.ret} глубже отгибов ${PANEL.ret}. ` +
         `Подрезать по месту: нижний ряд у косынок основания стоек (16 шт. −8×60×60) — паз 60×60 на глубину до 50 (у угловых кассет косынка основной стойки проходит через слой). ` +
         `Масса утеплителя по модели ≈ ${fmtMm(+solidsOf({ ...EMPTY, materials: MATERIALS, parts: parts.filter((q) => q.materialId === "mw50") }).reduce((sum, q) => sum + q.weight, 0).toFixed(1))} кг. Пароизоляция и крепление дюбелями в модели не заданы.`,
       points: corners.map((c) => at(c.sx > 0 ? 40 : W - 40, c.sy > 0 ? 40 : D - 40, H / 2)),

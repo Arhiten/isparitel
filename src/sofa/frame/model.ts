@@ -32,7 +32,8 @@ export type Material = {
  * Сечение профиля, мм: h — по стороне B детали (стенка швеллера), w — по толщине (полка), s — стенка, t — полка; kgm — масса 1 м.
  * Швеллер в своих координатах: стенка у толщины 0, полки смотрят в сторону толщины (openBack — в обратную). Труба — замкнутая, стенка s.
  */
-export type Profile = { kind: "channel" | "tube"; h: number; w: number; s: number; t: number; kgm: number };
+/** Профиль: швеллер, труба или равнополочный уголок (h — полка по B, w — полка по толщине, s/t — толщина стенки/полки). */
+export type Profile = { kind: "channel" | "tube" | "angle"; h: number; w: number; s: number; t: number; kgm: number };
 
 export type Connector = {
   id: string;
@@ -104,6 +105,8 @@ export type Part = {
    * (у плоскости xz поперёк — Y, у yz — X). B — развёртка сечения (по ней раскрой). Только в копии ядра для серий.
    */
   section?: Pt[];
+  /** Боковые отгибы гнутой детали по сечению (section): на обоих концах вытяжки, толщиной t, по ширине сечения from…to (u). */
+  sides?: { from: number; to: number; t: number };
 };
 
 export type Joint = { id: string; a: string; b: string; connectorId: string; qty: number };

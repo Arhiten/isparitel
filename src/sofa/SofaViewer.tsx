@@ -7,6 +7,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { Solid, V } from "./frame/calc";
 
 /** Что нужно модели: детали в сборе и габарит. */
@@ -17,7 +18,8 @@ const path = <T extends THREE.Path>(target: T, pts: Pt[]) => target.setFromPoint
 
 /**
  * Стальной профиль — сечение, вытянутое по длине. Сечение в своих осях: p — по стороне B (у стойки — по A), q — по толщине.
- * Швеллер: стенка у q = 0, полки к q = w (openBack — наоборот); труба — кольцо со стенкой s.
+ * Швеллер: стенка у q = 0, полки к q = w (openBack — наоборот); труба — кольцо со стенкой s;
+ * уголок: полка по высоте у q = 0 (обушок), вторая полка — у начала h, к q = w.
  */
 function profileGeometry(s: Solid) {
   const pr = s.material.profile!, { h, w } = pr, len = s.part.alongB ? s.part.b : s.part.a;
@@ -25,7 +27,9 @@ function profileGeometry(s: Solid) {
   const rings: [number, number][][] =
     pr.kind === "channel"
       ? [[[0, q(0)], [h, q(0)], [h, q(w)], [h - pr.t, q(w)], [h - pr.t, q(pr.s)], [pr.t, q(pr.s)], [pr.t, q(w)], [0, q(w)]]]
-      : [[[0, 0], [h, 0], [h, w], [0, w]], [[pr.s, pr.s], [h - pr.s, pr.s], [h - pr.s, w - pr.s], [pr.s, w - pr.s]]];
+      : pr.kind === "angle"
+        ? [[[0, q(0)], [h, q(0)], [h, q(pr.s)], [pr.t, q(pr.s)], [pr.t, q(w)], [0, q(w)]]]
+        : [[[0, 0], [h, 0], [h, w], [0, w]], [[pr.s, pr.s], [h - pr.s, pr.s], [h - pr.s, w - pr.s], [pr.s, w - pr.s]]];
   // Вдоль A: сечение в (B, толщина), вытяжка → A; вдоль B: сечение в (толщина, A), вытяжка → B. Обе замены осей — повороты, без зеркала.
   const xy = (p: number, v: number): Pt => (s.part.alongB ? [v, p] : [p, v]);
   const shape = path(new THREE.Shape(), rings[0].map(([p, v]) => xy(p, v)));
@@ -80,7 +84,15 @@ function planGeometry(s: Solid, origin: THREE.Vector3) {
 function sectionGeometry(s: Solid, origin: THREE.Vector3) {
   const xz = s.part.plane === "xz";
   const shape = path(new THREE.Shape(), s.part.section!.map(([u, z]): Pt => (xz ? [u, z] : [z, u])));
-  const g = new THREE.ExtrudeGeometry(shape, { depth: s.part.a, bevelEnabled: false });
+  let g: THREE.BufferGeometry = new THREE.ExtrudeGeometry(shape, { depth: s.part.a, bevelEnabled: false });
+  // Боковые отгибы (кассета): пластины толщиной t на обоих концах вытяжки, на всю высоту сечения.
+  const sides = s.part.sides;
+  if (sides) {
+    const top = Math.max(...s.part.section!.map((p) => p[1]));
+    const rect = path(new THREE.Shape(), ([[sides.from, 0], [sides.to, 0], [sides.to, top], [sides.from, top]] as Pt[]).map(([u, z]): Pt => (xz ? [u, z] : [z, u])));
+    const plate = (at: number) => new THREE.ExtrudeGeometry(rect, { depth: sides.t, bevelEnabled: false }).translate(0, 0, at);
+    g = mergeGeometries([g, plate(0), plate(s.part.a - sides.t)].map((x) => x.toNonIndexed()))!;
+  }
   const X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0), back = new THREE.Vector3(0, 0, -1);
   // Сцена: X изделия → X, Y изделия → −Z, Z изделия → Y.
   g.applyMatrix4(xz ? new THREE.Matrix4().makeBasis(back, Y, X) : new THREE.Matrix4().makeBasis(Y, X, back));
@@ -225,8 +237,11 @@ const SPREAD = 1.1;
 
 const NO_MARKERS: [number, number, number][] = [];
 
-/** markers — точки замечаний модели (нестыковки): красные метки поверх модели, в координатах изделия. */
-export default function SofaViewer({ calc, colors, explode = 0, picked, onPick, height = 520, markers = NO_MARKERS }: { calc: Model; colors: Record<string, string>; explode?: number; picked?: string | null; onPick?: (partId: string) => void; height?: number; markers?: [number, number, number][] }) {
+/**
+ * markers — точки замечаний модели (нестыковки): красные метки поверх модели, в координатах изделия;
+ * solidSkin — обшивку (детали ghost) рисовать непрозрачной, как снаружи.
+ */
+export default function SofaViewer({ calc, colors, explode = 0, picked, onPick, height = 520, markers = NO_MARKERS, solidSkin = false }: { calc: Model; colors: Record<string, string>; explode?: number; picked?: string | null; onPick?: (partId: string) => void; height?: number; markers?: [number, number, number][]; solidSkin?: boolean }) {
   const host = useRef<HTMLDivElement>(null);
   const stage = useRef<{ scene: THREE.Scene; render: () => void; camera: THREE.PerspectiveCamera; controls: OrbitControls; model?: THREE.Group; fit?: number } | null>(null);
   const pick = useRef(onPick);
@@ -308,7 +323,7 @@ export default function SofaViewer({ calc, colors, explode = 0, picked, onPick, 
         const color = solid.part.id === picked ? "#3b5bdb" : (colors[solid.part.id] ?? "#cccccc");
         const steel = solid.material.density > 3000;
         // ghost — полупрозрачная деталь (обшивка шкафа): виден каркас за ней.
-        const ghost = !!solid.part.ghost && solid.part.id !== picked;
+        const ghost = !solidSkin && !!solid.part.ghost && solid.part.id !== picked;
         const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color, roughness: steel ? 0.45 : 0.85, metalness: steel ? 0.45 : 0, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1, transparent: ghost, opacity: ghost ? 0.18 : 1, depthWrite: !ghost }));
         mesh.userData.partId = solid.part.id;
         mesh.add(new THREE.LineSegments(outline(solid, new THREE.Vector3(solid.min[0] - cx, solid.min[2] - z0, -(solid.min[1] - cy))), new THREE.LineBasicMaterial({ color: 0x3a2e22, transparent: true, opacity: 0.55 })));
@@ -345,7 +360,7 @@ export default function SofaViewer({ calc, colors, explode = 0, picked, onPick, 
       s.controls.update();
     }
     s.render();
-  }, [calc, colors, explode, picked, markers]);
+  }, [calc, colors, explode, picked, markers, solidSkin]);
 
   return <div ref={host} role="img" aria-label="Модель дивана: вращается мышью" style={{ height, width: "100%", cursor: onPick ? "pointer" : "grab", borderRadius: 10, overflow: "hidden", background: "var(--viewer-bg)" }} />;
 }
