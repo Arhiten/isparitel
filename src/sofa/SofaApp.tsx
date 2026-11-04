@@ -466,7 +466,7 @@ function FrameView({ fleet, model }: { fleet: Fleet; model: Model }) {
   const [explode, setExplode] = useState(0);
   const { frame, colors, markOf } = useMemo(() => {
     // Каркас створок двери (брусок, стойка у петель, диафрагмы) — тоже, отдельным цветом; в ведомость каркаса шкафа не входит.
-    const doorFrame = (id: string) => /^door-(stile|hstile|dia|embed)-/.test(id);
+    const doorFrame = (id: string) => /^door-(stile|hstile|dia)-/.test(id);
     const solids = model.solids.filter((s) => FRAME_MATERIALS.includes(s.material.id) || doorFrame(s.part.id));
     const size = [0, 1, 2].map((k) => Math.max(...solids.map((s) => s.max[k])) - Math.min(...solids.map((s) => s.min[k]))) as V;
     const markOf: Record<string, string> = {}, colors: Record<string, string> = {};
@@ -499,7 +499,7 @@ function FrameView({ fleet, model }: { fleet: Fleet; model: Model }) {
             {FRAME_KIND_TITLE[k]}
           </span>
         ))}
-        <span className="legend-item" title="Брусок притвора 50×50, стойка у петель 40×20, диафрагмы −3; в ведомость каркаса шкафа не входит">
+        <span className="legend-item" title="Брусок притвора 50×30, стойка у петель 40×20, диафрагмы −3; в ведомость каркаса шкафа не входит">
           <i style={{ background: DOOR_FRAME_COLOR }} />
           Каркас створок двери
         </span>

@@ -145,7 +145,7 @@ function DetailB({ hole, wall, panel, strip, flange, dim, pos }: { hole: number;
 }
 
 /** Листы комплекта КМ. */
-const SHEETS = ["Монтаж угловой кассеты", "Узел нижнего пояса", "Узел верхнего пояса", "Швеллеры основания", "Привязка и заземление", "Строповка", "Схема каркаса", "Стойки и трубы пояса", "Листовые детали каркаса", "Общие данные", "Перемычка и утеплитель", "Дверь. Скрытые петли", "Узел Ф. Стык внутренней облицовки", "Узлы врезки петли", "Закладная петли (деталь)", "Закладная в объёме"];
+const SHEETS = ["Монтаж угловой кассеты", "Узел нижнего пояса", "Узел верхнего пояса", "Швеллеры основания", "Привязка и заземление", "Строповка", "Схема каркаса", "Стойки и трубы пояса", "Листовые детали каркаса", "Общие данные", "Перемычка и утеплитель", "Дверь. Скрытые петли", "Узел Ф. Стык внутренней облицовки", "Узлы врезки петли", "Несущий каркас двери"];
 
 /** Штамп 185 × 55 в правом нижнем углу листа. */
 function Stamp({ code, title, height, node, sheet, scale }: { code: string; title: string; height: number; node: string; sheet: number; scale: string }) {
@@ -1473,325 +1473,247 @@ function JointSheet({ code, title }: { code: string; title: string }) {
 }
 
 /**
- * Лист 14: узлы врезки петли Præstmark 995 — горизонтальный А-А (М 4:1: стойка, уголок-вставка, отгиб створки, закладная, технический зазор,
- * паз под корпус) и вертикальный Б-Б (М 1,35:1, по оси отверстий x = 20: стенка стойки с парой отв. ⌀9 и заклёпками, уголок-вставка, отгиб,
- * закладная с резьбой М6, стойка 40×20), спецификация, зазоры, указания. Данные — cassetteNode().door.
+ * Лист 14: узлы врезки петли Præstmark 995 по «двери+петли.dwg» — горизонтальный А-А (М 2,2:1: стойка, боковой отгиб кассеты, уголок-вставка,
+ * створка, стойка у петель, корпус петли 28,5×24,5, винт М6 по оси x 18) и вертикальный Б-Б (М 1,1:1, по оси винта x 18: отверстия ⌀9 в стенках
+ * стоек, ⌀7 в уголке и отгибе, винты и корпус петли), зазоры. Данные — cassetteNode().door.
  */
 function HingeCutSheet({ code, title }: { code: string; title: string }) {
-  const n = cassetteNode(), d = n.door, H = n.height, hg = d.hinge, em = d.embed, cut = d.cut, g = d.gaps;
-  const half = cut.h / 2, zc = d.hingeZ[0] + hg.pair / 2;
+  const n = cassetteNode(), d = n.door, H = n.height, hg = d.hinge, g = d.gaps, hd = d.hingeDwg;
+  const zc = hg.centers[0];
   type Pt2 = [number, number];
-  // --- А-А: план на отметке петли, М 4:1; x вправо (в шкаф), y к задней стенке (вниз на листе) ---
-  const k = 3, X0 = -8, Y0 = 106, OX = 30, OY = 24;
+  // --- А-А: план на отметке петли, x вправо (в шкаф), y к задней стенке — вниз на листе ---
+  const k = 2.2, X0 = -8, Y0 = 78, OX = 30, OY = 26;
   const P = (x: number, y: number): Pt2 => [OX + (x - X0) * k, OY + (y - Y0) * k];
   const pts = (list: Pt[]) => list.map(([x, y]) => P(x, y).join(",")).join(" ");
-  const win = hg.at[0] + cut.w;
-  // --- Б-Б: вертикальный разрез по x = 20, М 1,35:1; y вправо (к задней стенке), z вверх ---
-  const kv = 1.35, YB = 100, OXB = 34, OYB = 288, ZB = zc - 56;
-  const V = (y: number, z: number): Pt2 => [OXB + (y - YB) * kv, OYB - (z - ZB) * kv];
-  const vr = (y0: number, z0: number, y1: number, z1: number, fill: string, w = THICK, extra: object = {}) => (
-    <rect x={V(y0, z1)[0]} y={V(y0, z1)[1]} width={(y1 - y0) * kv} height={(z1 - z0) * kv} fill={fill} stroke="#000" strokeWidth={w} {...extra} />
+  const rect = (x0: number, y0: number, x1: number, y1: number, fill: string, w = THICK) => (
+    <rect x={P(x0, y0)[0]} y={P(x0, y0)[1]} width={(x1 - x0) * k} height={(y1 - y0) * k} fill={fill} stroke="#000" strokeWidth={w} />
   );
-  const zLo = zc - 56, zHi = zc + 56;
-  const posts: [number, string][] = [[d.hingeZ[0], "основное"], [d.hingeZ[0] + hg.pair, "второе"]];
+  // --- Б-Б: вертикальный разрез по x = 18, y вправо, z вверх ---
+  const kv = 1.1, YB = 76, OXB = 205, OYB = 152, ZB = zc - 56;
+  const V = (y: number, z: number): Pt2 => [OXB + (y - YB) * kv, OYB - (z - ZB) * kv];
+  const vr = (y0: number, z0: number, y1: number, z1: number, fill: string, w = THICK) => (
+    <rect x={V(y0, z1)[0]} y={V(y0, z1)[1]} width={(y1 - y0) * kv} height={(z1 - z0) * kv} fill={fill} stroke="#000" strokeWidth={w} />
+  );
+  const zl = zc - 56, zh = zc + 56, ph = hg.pair / 2, hz = [zc - ph, zc + ph];
+  const holeGaps = (y0: number, y1: number, d0: number, fill: string, wid = THICK) =>
+    [[zl, hz[0] - d0 / 2], [hz[0] + d0 / 2, hz[1] - d0 / 2], [hz[1] + d0 / 2, zh]].map(([a, b]) => <g key={a}>{vr(y0, a, y1, b, fill, wid)}</g>);
   const spec: [string, string, string, string][] = [
-    ["1", "Закладная петли −" + em.t + "×" + em.w + "×" + em.h + ", 09Г2С (лист 15)", String(2 * hg.perLeaf), em.holes + " резьбы " + em.thread + " через " + em.pitch],
-    ["2", "Отгиб створки (наружный лист 3), паз " + cut.h + "×" + cut.w, String(2 * hg.perLeaf), "открыт с торца отгиба"],
-    ["3", "Уголок-вставка нерж. 4 на грани стойки, паз " + cut.h + "×" + cut.w, String(2 * hg.perLeaf), "по оси петли"],
-    ["4", "Стойка у петель, труба 40×20×2", "2", "закладная привариена к грани y 112"],
-    ["5", "Стойка основная 60×60×3: пара отв. ⌀9 через " + hg.pair, "2", "заклёпки М6 — рамная часть петли"],
-    ["6", "Петля Præstmark 995 (995-4-0-4-MP-0)", String(2 * hg.perLeaf), hg.perLeaf + " LH + " + hg.perLeaf + " RH"],
-    ["7", "Винт М6 + шайба A2", String(4 * em.holes * hg.perLeaf), "рамная и дверная часть"],
-  ].map((r) => r as [string, string, string, string]);
-  spec[3][3] = "закладная приварена к грани y " + em.y;
+    ["1", "Петля Præstmark 995 (995-4-0-4-MP-0), нерж. AISI 304", String(2 * hg.perLeaf), hg.perLeaf + " LH + " + hg.perLeaf + " RH; корпус 90×28,5×24,5"],
+    ["2", "Заклёпка резьбовая М6, бортик, A2", String(2 * 2 * 2 * hg.perLeaf), "по 2 на рамную и дверную часть, шаг " + hg.pair],
+    ["3", "Винт М6 + шайба A2", String(2 * 2 * 2 * hg.perLeaf), "рамная — через уголок и отгиб кассеты"],
+    ["4", "Уголок-вставка нерж. 4: отв. ⌀" + d.hole.d + " ×2 на петлю", String(2 * hg.perLeaf), "по оси x " + hg.boltX + ", шаг " + hg.pair],
+    ["5", "Боковой отгиб кассеты 3: отв. ⌀" + d.hole.d + " ×2 на петлю", String(2 * hg.perLeaf), "по оси x " + hg.boltX],
+    ["6", "Основная стойка 60×60×3: 3 пары отв. ⌀9, x " + hg.boltX, "2", "центры +" + hg.centers.join(", +")],
+    ["7", "Стойка у петель 40×20×3: 3 пары отв. ⌀9", "2", "те же центры, по грани y 98,5"],
+  ];
   const notes = [
-    "1. Закладная — только на створке: отгиб 3 и стенка трубы 2 резьбу М6 не держат. Рамная часть — заклёпки М6 в стенке стойки 3, закладная не нужна.",
-    "2. Закладную приварить к стойке у петель и к отгибу изнутри (катет 3, прерывисто) до сборки створки; резьбу М6 — после сварки и покраски, отв. в отгибе ⌀6,6 по кондуктору закладной.",
-    "3. Пазы в отгибе и уголке-вставке — лазером до гибки, запас " + cut.relief + " на сторону, углы R2; пазы под клипсы — по чертежу поставщика.",
-    "4. Технические зазоры: до уголка-вставки " + g.hingeSide + " (по каталогу), между створками " + g.meeting + ", над основанием " + g.bottom + ", верх — в уровень с кассетами. Регулировки у петли нет — только допуски.",
-    "5. Ось петли вынимается вверх на длину корпуса (" + hg.model.L + "): над верхней петлёй отгиб верха кассеты вырезать или сделать съёмным.",
-    "6. Положение корпуса относительно оси, глубину кармана и пазы под клипсы подтвердить чертежом поставщика до резки.",
+    "1. Сечение корпуса, ось и винт — по «двери+петли.dwg»: ось в x " + fmt(hg.at[0]) + ", y " + fmt(hg.at[1]) + "; корпус 28,5 × 24,5 вплотную к уголку-вставке (верх на y 123) и к стенке стойки 40×20×3 (низ на y 98,5).",
+    "2. Закладной нет: дверная часть петли крепится прямо в резьбовые заклёпки М6 в стенке стойки у петель (стенка 3); зазора под закладную в новом сечении нет.",
+    "3. Отверстия: в основной стойке 3 пары ⌀9 (x " + hg.boltX + ", шаг " + hg.pair + ") — вне ряда крепления кассет (x 20); в стойке у петель — 3 пары ⌀9; в уголке-вставке и боковом отгибе кассеты — ⌀" + d.hole.d + " по оси винта.",
+    "4. Торец створки закрыт внутренним листом (y 117…118): до уголка-вставки " + g.hingeSide + ", между створками " + g.meeting + ", над основанием " + g.bottom + ", верх — в уровень с наружными кассетами.",
+    "5. Ось петли вынимается вверх на длину корпуса (" + hg.model.L + "): над верхней петлёй нужен съёмный лючок или вырез в верхнем отгибе кассеты (замечание n-hinge).",
+    "6. Положение отверстий в дверной части вдоль x и пазы под клипсы — подтвердить чертежом поставщика до резки.",
   ];
   return (
     <g>
-      {/* ---------------- А-А ---------------- */}
       <text x={25} y={14} fontSize={HEAD} fontWeight="bold">
-        А-А — горизонтальный узел (М 3:1)
+        А-А — горизонтальный узел (М 2,2:1)
       </text>
       <defs>
         <clipPath id="hc">
-          <rect x={P(X0, Y0)[0]} y={P(X0, Y0)[1]} width={(54 - X0) * k} height={(136 - Y0) * k} />
+          <rect x={P(X0, Y0)[0]} y={P(X0, Y0)[1]} width={(62 - X0) * k} height={(142 - Y0) * k} />
         </clipPath>
       </defs>
       <g clipPath="url(#hc)">
-        <rect x={P(0, 130)[0]} y={P(0, 130)[1]} width={60 * k} height={6 * k} fill="url(#hatch)" stroke="#000" strokeWidth={THICK} />
+        {rect(0, 130, 60, 150, "url(#hatch)")}
+        {rect(3, 133, 57, 150, "#fff", THIN)}
+        {rect(-3, 127, 40, 130, "#000", THIN)}
+        {rect(-3, 130, 0, 150, "#000", THIN)}
         <polygon points={pts(d.strip)} fill="url(#hatch2)" stroke="#000" strokeWidth={THICK} />
         <polygon points={pts(d.outer)} fill="#000" stroke="#000" strokeWidth={THIN} />
         <polygon points={pts(d.inner)} fill="#000" stroke="#000" strokeWidth={THIN} />
         <polygon points={pts(d.wool)} fill="url(#wool)" stroke="#000" strokeWidth={THIN} />
         <polygon points={pts(d.hingeStile)} fill="#fff" stroke="#000" strokeWidth={THICK} />
-        <rect x={P(em.x, em.y)[0]} y={P(em.x, em.y)[1]} width={em.w * k} height={em.t * k} fill="url(#hatch2)" stroke="#000" strokeWidth={THICK} />
-        {/* Паз под корпус петли: отгиб и уголок-вставка вырезаны от торца отгиба на ${cut.w}. */}
-        <rect x={P(hg.at[0] - 1, 119.5)[0]} y={P(0, 119.5)[1]} width={(cut.w + 1) * k} height={11 * k} fill="#fff" stroke="#c00" strokeWidth={0.5} strokeDasharray="2 1" />
+        <rect x={P(12.3141, 81.5)[0]} y={P(12.3141, 81.5)[1]} width={34 * k} height={14 * k} fill="none" stroke="#000" strokeWidth={THIN} />
+        <polygon points={pts(hd.bodyPts)} fill="#fff" stroke="#c00" strokeWidth={THICK} />
+        <polygon points={pts(hd.shank)} fill="#fff" stroke="#c00" strokeWidth={THICK} />
+        <polygon points={pts(hd.head)} fill="#c00" stroke="#c00" strokeWidth={THIN} />
+        <circle cx={P(hg.at[0], hg.at[1])[0]} cy={P(hg.at[0], hg.at[1])[1]} r={hd.pin.r * k} fill="none" stroke="#c00" strokeWidth={THICK} />
       </g>
-      <circle cx={P(hg.at[0], hg.at[1])[0]} cy={P(hg.at[0], hg.at[1])[1]} r={(hg.model.pinD * k) / 2} fill="#fff" stroke="#000" strokeWidth={THICK} />
-      <line x1={P(hg.at[0], hg.at[1])[0] - 6} y1={P(hg.at[0], hg.at[1])[1]} x2={P(hg.at[0], hg.at[1])[0] + 6} y2={P(hg.at[0], hg.at[1])[1]} stroke="#000" strokeWidth={THIN} strokeDasharray="6 1.5 1 1.5" />
-      <text x={P(hg.at[0], hg.at[1])[0] - 14} y={P(hg.at[0], hg.at[1])[1] - 6} fontSize={TXT}>
+      <line x1={P(hg.at[0], hg.at[1] - 12)[0]} y1={P(hg.at[0], hg.at[1] - 12)[1]} x2={P(hg.at[0], hg.at[1] + 22)[0]} y2={P(hg.at[0], hg.at[1] + 22)[1]} stroke="#000" strokeWidth={THIN} strokeDasharray="6 1.5 1 1.5" />
+      <line x1={P(hg.boltX, 118)[0]} y1={P(hg.boltX, 118)[1]} x2={P(hg.boltX, 142)[0]} y2={P(hg.boltX, 142)[1]} stroke="#000" strokeWidth={THIN} strokeDasharray="6 1.5 1 1.5" />
+      {dim(P(0, 123), P(28.5, 123), [0, -8], "28,5")}
+      {dim(P(hg.at[0], 100), P(hg.boltX, 100), [0, 8], "12")}
+      {dim(P(0, 104.5), P(hg.at[0], 104.5), [0, 4], "6")}
+      {dim(P(-5, 98.5), P(-5, 123), [-3, 0], "24,5", true)}
+      {dim(P(52, 118), P(52, 123), [3, 0], String(g.hingeSide), true)}
+      {dim(P(-5, 98.5), P(-5, 78.5), [-3, 0], "20", true)}
+      {dim(P(9.3141, 76), P(49.3141, 76), [0, 4], "40")}
+      {pos(P(14, 110), P(70, 100), 1)}
+      {pos(P(30, 125), P(70, 112), 4)}
+      {pos(P(30, 128.5), P(70, 124), 5)}
+      {pos(P(30, 88), P(70, 88), 7)}
+      {pos(P(30, 135), P(70, 136), 6)}
+      <text x={P(hg.at[0], hg.at[1] - 12)[0] + 3} y={P(hg.at[0], hg.at[1] - 12)[1] + 3} fontSize={TXT}>
         ось петли
       </text>
-      {dim(P(50, 120), P(50, 123), [4, 0], "3", true)}
-      {dim(P(50, 123), P(50, 126), [4, 0], String(g.hingeSide), true)}
-      {dim(P(50, 126), P(50, 130), [4, 0], "4", true)}
-      {dim(P(em.x, 112), P(em.x + em.w, 112), [0, -4], String(em.w))}
-      {dim(P(hg.at[0], 136), P(win, 136), [0, 5], String(cut.w))}
-      {pos(P(36, 116), P(64, 113), 1)}
-      {pos(P(36, 121.5), P(64, 120), 2)}
-      {pos(P(36, 128), P(64, 127), 3)}
-      {pos(P(30, 109), P(64, 108), 4)}
-      <text x={P(hg.at[0], 136)[0]} y={P(0, 136)[1] + 8} fontSize={TXT}>
-        паз под корпус петли (пунктир)
-      </text>
       {/* ---------------- Б-Б ---------------- */}
-      <text x={25} y={134} fontSize={HEAD} fontWeight="bold">
-        {"Б-Б — вертикальный узел по x = 20 (М 1,35:1), центр петли +" + fmt(Math.round(zc * 10) / 10)}
+      <text x={205} y={14} fontSize={HEAD} fontWeight="bold">
+        Б-Б — по оси винта (М 1,1:1)
       </text>
-      {/* Стойка у петель: стенка 2 у грани y 112 и далее вглубь (обрыв). */}
-      {vr(110, zLo, 112, zHi, "url(#hatch)")}
-      {vr(92, zLo, 94, zHi, "url(#hatch)")}
-      {/* Закладная с двумя резьбами М6 (штрих — ось отверстий). */}
-      {vr(em.y, zc - em.h / 2, em.y + em.t, zc + em.h / 2, "url(#hatch2)")}
-      {[-hg.pair / 2, hg.pair / 2].map((o) => (
-        <line key={o} x1={V(em.y - 2, zc + o)[0]} y1={V(0, zc + o)[1]} x2={V(em.y + em.t + 12, zc + o)[0]} y2={V(0, zc + o)[1]} stroke="#000" strokeWidth={THIN} strokeDasharray="4 1 1 1" />
-      ))}
-      {/* Отгиб створки (y 120…123) и уголок-вставка (y 126…130): сплошные выше и ниже паза. */}
-      {vr(120, zLo, 123, zc - half, "#000", THIN)}
-      {vr(120, zc + half, 123, zHi, "#000", THIN)}
-      {vr(126, zLo, 130, zc - half, "url(#hatch2)")}
-      {vr(126, zc + half, 130, zHi, "url(#hatch2)")}
-      {/* Стенка стойки 3 (y 130…133) с отверстиями ⌀9 пары и заклёпками М6. */}
-      {vr(130, zLo, 133, posts[0][0] - 4.5, "url(#hatch)")}
-      {vr(130, posts[0][0] + 4.5, 133, posts[1][0] - 4.5, "url(#hatch)")}
-      {vr(130, posts[1][0] + 4.5, 133, zHi, "url(#hatch)")}
-      {posts.map(([z]) => (
+      {/* Стойка у петель: стенка 3 (y 95,5…98,5) с парой отв. ⌀9; корпус петли — штрихом, 90 по высоте. */}
+      {holeGaps(95.5, 98.5, 9, "url(#hatch)")}
+      <rect x={V(98.5, zc + 45)[0]} y={V(98.5, zc + 45)[1]} width={(123 - 98.5) * kv} height={90 * kv} fill="none" stroke="#c00" strokeWidth={THICK} strokeDasharray="3 1.5" />
+      {/* Уголок-вставка 4 (y 123…127) и боковой отгиб кассеты 3 (y 127…130) с отв. ⌀7; стенка стойки 3 (y 130…133) с отв. ⌀9. */}
+      {holeGaps(123, 127, d.hole.d, "url(#hatch2)")}
+      {holeGaps(127, 130, d.hole.d, "#000", THIN)}
+      {holeGaps(130, 133, 9, "url(#hatch)")}
+      {/* Винты М6 по оси x 18: голова на уголке, стержень в заклёпку стойки. */}
+      {hz.map((z) => (
         <g key={z}>
-          {vr(130, z - 3, 136, z + 3, "#fff", THIN)}
-          {vr(127.5, z - 4.5, 130, z + 4.5, "#fff", THIN)}
-          <line x1={V(122, z)[0]} y1={V(0, z)[1]} x2={V(139, z)[0]} y2={V(0, z)[1]} stroke="#000" strokeWidth={THIN} strokeDasharray="4 1 1 1" />
+          <rect x={V(122.8, z + 3)[0]} y={V(122.8, z + 3)[1]} width={(141.9 - 122.8) * kv} height={6 * kv} fill="#fff" stroke="#c00" strokeWidth={THICK} />
+          <rect x={V(124.97, z + 5.7)[0]} y={V(124.97, z + 5.7)[1]} width={(130.25 - 124.97) * kv} height={11.4 * kv} fill="#c00" stroke="#c00" strokeWidth={THIN} />
         </g>
       ))}
-      {/* Рамная часть петли — пластина на грани стойки в пазу уголка-вставки (по каталогу, пластина 45 с двумя отв. ⌀7 через 25). */}
-      {vr(128, zc - 22.5, 130, zc + 22.5, "#fff", THIN, { strokeDasharray: "2 1" })}
-      {/* Размеры. */}
-      {dim(V(140, zc - half), V(140, zc + half), [20, 0], String(cut.h), true)}
-      {dim(V(140, zc - em.h / 2), V(140, zc + em.h / 2), [32, 0], String(em.h), true)}
-      {dim(V(140, posts[0][0]), V(140, posts[1][0]), [44, 0], String(hg.pair), true)}
-      {pos(V(116, zc + 30), [96, V(0, zc + 50)[1]], 1)}
-      {pos(V(121.5, zc + half + 6), [96, V(0, zc + 34)[1]], 2)}
-      {pos(V(128, zc + half + 8), [96, V(0, zc + 18)[1]], 3)}
-      {pos(V(111, zc - 40), [96, V(0, zc - 6)[1]], 4)}
-      {pos(V(131, zc + 40), [96, V(0, zc - 24)[1]], 5)}
-      {/* Технические зазоры. */}
-      <text x={150} y={152} fontSize={HEAD} fontWeight="bold">
+      {dim(V(133, hz[0]), V(133, hz[1]), [26, 0], String(hg.pair), true)}
+      {dim(V(133, zc - 45), V(133, zc + 45), [38, 0], "90", true)}
+      <text x={V(98.5, zc + 45)[0]} y={V(0, zc + 45)[1] - 2} fontSize={TXT}>
+        корпус петли
+      </text>
+      <text x={OXB} y={OYB + 8} fontSize={TXT}>
+        {"центр петли +" + fmt(zc)}
+      </text>
+      {/* Зазоры и сводка */}
+      <text x={25} y={186} fontSize={HEAD} fontWeight="bold">
         Технические зазоры, мм
       </text>
       {[
-        ["Отгиб створки — уголок-вставка (сторона петель)", String(g.hingeSide)],
+        ["Торец створки (внутренний лист) — уголок-вставка", String(g.hingeSide)],
         ["Между створками", String(g.meeting)],
         ["Створка — основание", String(g.bottom)],
-        ["Верх створки — кассеты", "в уровень"],
-        ["Паз под корпус: запас на сторону", String(cut.relief)],
-        ["Паз в отгибе и уголке: " + cut.h + " × " + cut.w, "от торца"],
+        ["Верх створки — наружные кассеты", "в уровень"],
+        ["Ось петли: от торца корпуса / от грани каркаса (x, y)", fmt(hg.at[0]) + " / " + fmt(hg.at[1])],
+        ["Высоты центров петель", "+" + hg.centers.join(", +")],
       ].map(([label, v], i) => (
         <g key={label}>
-          <text x={150} y={160 + i * 5} fontSize={TXT}>
+          <text x={25} y={193 + i * 5} fontSize={TXT}>
             {label}
           </text>
-          <text x={292} y={160 + i * 5} fontSize={TXT} textAnchor="end">
+          <text x={215} y={193 + i * 5} fontSize={TXT} textAnchor="end">
             {v}
           </text>
         </g>
       ))}
       <SideText spec={spec} notes={notes} />
-      <Stamp code={code} title={title} height={H} node="Узлы врезки петли" sheet={14} scale="4:1; 1,35:1" />
+      <Stamp code={code} title={title} height={H} node="Узлы врезки петли" sheet={14} scale="2,2:1; 1,1:1" />
     </g>
   );
 }
 
 /**
- * Лист 15: закладная петли — рабочий чертёж детали: вид М 2:1 с двумя резьбами М6, боковой вид, сварка, допуски, масса. Данные — cassetteNode().door.embed.
+ * Лист 15: несущий каркас двери (левая створка, правая — зеркально): вид изнутри М 1:10 — стойка притвора 50×30×2, стойка у петель 40×20×3,
+ * диафрагмы −3 и петли; план на отметке диафрагмы; спецификация с массой. Данные — cassetteNode().door.
  */
-/**
- * Лист 16: закладная петли в объёме — аксонометрия узла (вид спереди-справа-сверху): стенка стойки с парой отв. ⌀9, уголок-вставка с пазом,
- * отгиб створки с пазом, закладная З1 с резьбами М6, стойка у петель 40×20; слева — в сборе, справа — разнесено по y. Данные — cassetteNode().door.
- */
-function EmbedIsoSheet({ code, title }: { code: string; title: string }) {
-  const n = cassetteNode(), d = n.door, H = n.height, hg = d.hinge, em = d.embed, cut = d.cut;
-  const zc = d.hingeZ[0] + hg.pair / 2, zl = zc - 55, zh = zc + 55, half = cut.h / 2;
-  type V3 = [number, number, number];
-  type Box = { id: string; b: [number, number, number, number, number, number]; fill: string; label?: string; holes?: { face: "y0"; x: number; z: number; r: number }[] };
-  const wx = hg.at[0] + cut.w; // конец паза по x (24,2)
-  const base: Box[] = [
-    // Стенка стойки (спереди) и боковые стенки — обрыв по y
-    { id: "post", b: [0, 130, zl, 60, 133, zh], fill: "#c9ced6", holes: [d.hingeZ[0], d.hingeZ[0] + hg.pair].map((z) => ({ face: "y0" as const, x: 20, z, r: n.hole / 2 })) },
-    { id: "post-l", b: [0, 133, zl, 3, 160, zh], fill: "#c9ced6" },
-    { id: "post-r", b: [57, 133, zl, 60, 160, zh], fill: "#c9ced6" },
-    // Уголок-вставка 4: ниже и выше паза — по всей длине, в пазу — только за концом паза; отогнутая полка x 61…65
-    { id: "strip-lo", b: [-5, 126, zl, 61, 130, zc - half], fill: "#e3e6ea" },
-    { id: "strip-hi", b: [-5, 126, zc + half, 61, 130, zh], fill: "#e3e6ea" },
-    { id: "strip-mid", b: [wx, 126, zc - half, 61, 130, zc + half], fill: "#e3e6ea" },
-    { id: "strip-leg", b: [61, 126, zl, 65, 150, zh], fill: "#e3e6ea" },
-    // Отгиб створки 3 (y 120…123) с пазом от торца
-    { id: "fl-lo", b: [-2.8, 120, zl, 40, 123, zc - half], fill: "#8d96a3" },
-    { id: "fl-hi", b: [-2.8, 120, zc + half, 40, 123, zh], fill: "#8d96a3" },
-    { id: "fl-mid", b: [wx, 120, zc - half, 40, 123, zc + half], fill: "#8d96a3" },
-    // Закладная З1 и стойка у петель
-    { id: "embed", b: [em.x, em.y, zc - em.h / 2, em.x + em.w, em.y + em.t, zc + em.h / 2], fill: "#f0a23a", holes: [-hg.pair / 2, hg.pair / 2].map((o) => ({ face: "y0" as const, x: em.x + em.w / 2, z: zc + o, r: 2.5 })) },
-    // Стойка у петель — местный разрез: прорезана на высоту закладной, чтобы был виден её торец с резьбами.
-    { id: "stile-lo", b: [8, 100, zl, 48, 112, zc - em.h / 2], fill: "#a9b3c1" },
-    { id: "stile-hi", b: [8, 100, zc + em.h / 2, 48, 112, zh], fill: "#a9b3c1" },
-  ];
-  // Разнесение по y: от стойки к створке
-  const shiftY: Record<string, number> = { post: 12, "post-l": 12, "post-r": 12, "strip-lo": 0, "strip-hi": 0, "strip-mid": 0, "strip-leg": 0, "fl-lo": -12, "fl-hi": -12, "fl-mid": -12, embed: -26, "stile-lo": -40, "stile-hi": -40 };
-  const proj = ([x, y, z]: V3): [number, number] => [(x + y) * 0.866, (x - y) * 0.5 - z];
-  const view = (explode: boolean, ox: number, oy: number, kk: number) => {
-    const boxes = base.map((p) => {
-      const dy = explode ? shiftY[p.id] ?? 0 : 0;
-      const [x0, y0, z0, x1, y1, z1] = p.b;
-      return { ...p, b: [x0, y0 + dy, z0, x1, y1 + dy, z1] as Box["b"] };
-    });
-    const all: [number, number][] = [];
-    boxes.forEach(({ b: [x0, y0, z0, x1, y1, z1] }) => [[x0, y0, z0], [x1, y0, z0], [x0, y1, z0], [x1, y1, z0], [x0, y0, z1], [x1, y0, z1], [x0, y1, z1], [x1, y1, z1]].forEach((q) => all.push(proj(q as V3))));
-    const umin = Math.min(...all.map((q) => q[0])), vmin = Math.min(...all.map((q) => q[1]));
-    const S = (q: V3): [number, number] => { const [u, v] = proj(q); return [ox + (u - umin) * kk, oy + (v - vmin) * kk]; };
-    const poly = (list: V3[], fill: string) => <polygon points={list.map((q) => S(q).join(",")).join(" ")} fill={fill} stroke="#000" strokeWidth={THIN} />;
-    const shade = (hex: string, f: number) => {
-      const c = [1, 3, 5].map((i) => Math.max(0, Math.min(255, Math.round(parseInt(hex.slice(i, i + 2), 16) * f))));
-      return "rgb(" + c.join(",") + ")";
-    };
-    const order = [...boxes].sort((a, b) => (a.b[0] + a.b[3]) / 2 - (a.b[1] + a.b[4]) / 2 + (a.b[2] + a.b[5]) / 2 - ((b.b[0] + b.b[3]) / 2 - (b.b[1] + b.b[4]) / 2 + (b.b[2] + b.b[5]) / 2));
-    return {
-      S,
-      el: order.map((p) => {
-        const [x0, y0, z0, x1, y1, z1] = p.b;
-        return (
-          <g key={p.id}>
-            {poly([[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]], shade(p.fill, 0.92))}
-            {poly([[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], shade(p.fill, 0.74))}
-            {poly([[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], shade(p.fill, 1.08))}
-            {(p.holes ?? []).map((h, i) => (
-              <polygon key={i} points={Array.from({ length: 24 }, (_, j) => S([h.x + h.r * Math.cos((j / 24) * 2 * Math.PI), y0, h.z + h.r * Math.sin((j / 24) * 2 * Math.PI)]).join(",")).join(" ")} fill="#fff" stroke="#000" strokeWidth={THIN} />
-            ))}
-          </g>
-        );
-      }),
-    };
-  };
-  const kk = 0.9;
-  const a = view(false, 26, 34, kk), b = view(true, 150, 34, kk);
+function DoorFrameSheet({ code, title }: { code: string; title: string }) {
+  const n = cassetteNode(), d = n.door, H = n.height, hg = d.hinge, f = d.frame;
+  const leafW = 448 + 2.8;
+  const dz = f.dz, top = dz + f.dh;
+  // --- Вид изнутри, М 1:10: x от оси петли вправо, z вверх ---
+  const e = 0.1, EX = 64, EZ = (z: number) => 205 - (z - dz) * e;
+  const X = (x: number) => EX + (x + 2.8) * e;
+  const stileL = f.inside;
+  const kgStile = f.kg50 * (stileL / 1000), kgH = f.kg4020 * (stileL / 1000), kgDia = f.diaKg * f.levels.length;
+  const kgLeaf = kgStile + kgH + kgDia;
+  // --- План Г-Г: x вправо, y — к задней стенке (вниз) ---
+  const k = 0.36, OX = 135, OY = 36;
+  const P = (x: number, y: number): [number, number] => [OX + (x + 3) * k, OY + (y + 3) * k];
+  const pts = (list: Pt[]) => list.map(([x, y]) => P(x, y).join(",")).join(" ");
   const spec: [string, string, string, string][] = [
-    ["1", "Закладная З1 −" + em.t + "×" + em.w + "×" + em.h + " (оранжевая)", String(2 * hg.perLeaf), em.holes + " резьбы " + em.thread + " через " + em.pitch + " в плоскости x = 20"],
-    ["2", "Отгиб створки 3 с пазом " + cut.h + "×" + cut.w, String(2 * hg.perLeaf), "паз открыт с торца отгиба"],
-    ["3", "Уголок-вставка 4 с пазом " + cut.h + "×" + cut.w, String(2 * hg.perLeaf), "полка 61…65 не прорезается"],
-    ["4", "Стенка стойки 3 с парой отв. ⌀" + n.hole, "2", "рамная часть петли — заклёпки М6"],
-    ["5", "Стойка у петель 40×20×2 (обрыв)", "2", "закладная приварена к грани"],
+    ["Д1", "Стойка притвора, труба 50×30×2, L=" + fmt(stileL), "2", fmt(kgStile) + " кг каждая; между нижней и верхней диафрагмой"],
+    ["Д2", "Стойка у петель, труба 40×20×3, L=" + fmt(stileL), "2", fmt(kgH) + " кг каждая; в стенке — 3 пары отв. ⌀9"],
+    ["Д3", "Диафрагма −" + f.pt + " по сечению створки", String(2 * f.levels.length), f.levels.length + " на створку; " + fmt(f.diaKg) + " кг каждая"],
+    ["—", "Каркас одной створки, итого", "1", fmt(kgLeaf) + " кг; две створки — " + fmt(2 * kgLeaf) + " кг"],
   ];
   const notes = [
-    "1. Вид спереди-справа-сверху (аксонометрия 30°), левая створка, на высоте первой петли; z-окно " + fmt(zl) + "…" + fmt(zh) + ". Стойка 60×60 показана с обрывом, стойка у петель 40×20 — местным разрезом на высоту закладной.",
-    "2. Слева — в сборе, справа — разнесено вдоль y (от стойки к створке): стенка стойки, уголок, отгиб, закладная, стойка 40×20.",
-    "3. Корпус петли Præstmark 995 не показан: положение и пазы под клипсы — по чертежу поставщика.",
+    "1. Каркас створки — не каркас шкафа: марки Д1–Д3 отдельные; правая створка — зеркально. Сечение по «двери+петли.dwg»: стойка Д2 — в x 9,3…49,3, y 78,5…98,5; торец створки закрыт внутренним листом на y 117…118.",
+    "2. Порядок: диафрагмы Д3 приварить к наружному листу 3 (прерывисто, катет 3), затем стойки Д1 и Д2 к диафрагмам по периметру сечения.",
+    "3. Внутренний лист 1 к каркасу не приваривать — на терморазрывной ленте и заклёпках (см. замечание n-thermal).",
+    "4. Высота створки: от +" + dz + " (зазор " + hg.gap + " над основанием) до +" + fmt(top) + " в уровень с наружными кассетами. Диафрагмы: низ, верх и стык рядов утеплителя на плиту 1200 минус обжатие 20.",
+    "5. Нужны перемычки: петли с одной стороны, створка ≈ 44 кг скручивается и провисает; диафрагмы замыкают коробку на кручение и держат ряды утеплителя.",
+    "6. Дверная часть петель — на заклёпках М6 в стенке Д2 (по два отв. ⌀9 через " + hg.pair + " на петлю, центры +" + hg.centers.join(", +") + "); закладных нет.",
+    "7. Допуск прямоугольности створки по диагоналям ≤ 2, плоскостность стенки Д2 под петлю ≤ 0,5 на длине корпуса.",
   ];
   return (
     <g>
       <text x={25} y={14} fontSize={HEAD} fontWeight="bold">
-        Закладная петли в объёме
-      </text>
-      <text x={26} y={22} fontSize={TXT}>
-        В сборе
-      </text>
-      <text x={150} y={22} fontSize={TXT}>
-        Разнесено
-      </text>
-      {a.el}
-      {b.el}
-      <SideText spec={spec} notes={notes} />
-      <Stamp code={code} title={title} height={H} node="Закладная в объёме" sheet={16} scale="б/м" />
-    </g>
-  );
-}
-
-function EmbedSheet({ code, title }: { code: string; title: string }) {
-  const n = cassetteNode(), d = n.door, H = n.height, hg = d.hinge, em = d.embed;
-  const k = 2, OX = 60, OY = 28;
-  const F = (u: number, v: number): [number, number] => [OX + u * k, OY + v * k];
-  const mass = (em.w * em.h * em.t * 7.85e-6);
-  const holeD = 5, cx = em.w / 2, c1 = em.h / 2 - em.pitch / 2, c2 = em.h / 2 + em.pitch / 2;
-  const spec: [string, string, string, string][] = [
-    ["З1", "Закладная петли −" + em.t + "×" + em.w + "×" + em.h + ", лист 09Г2С ГОСТ 19903", String(2 * hg.perLeaf), "масса " + fmt(mass) + " кг; " + em.holes + " резьбы " + em.thread],
-  ];
-  const notes = [
-    "1. Резьба " + em.thread + "-6H: сверление ⌀" + holeD + " через пластину, нарезать после сварки и покраски; зенковка 0,5×45° с лицевой стороны.",
-    "2. Шаг отверстий " + em.pitch + " ± 0,1 — по петле Præstmark 995 (пластина с двумя отв. ⌀7 через 25); от торцов " + fmt(c1) + " и " + fmt(em.h - c2 + 0) + " — симметрично.",
-    "3. Закладная лежит лицом (y " + (em.y + em.t) + ") под отгибом створки, тыльной стороной (y " + em.y + ") — на грани стойки 40×20; приваривается к обоим: шов ∠3 по длинным сторонам, прерывистый 30 / 60.",
-    "4. Отгиб створки сверлить по закладной ⌀6,6 (кондуктор), после сварки; защитить резьбу при покраске.",
-    "5. Пластина — по месту, центр на середине пары отверстий петли: левая створка +" + fmt(d.hingeZ[0] + hg.pair / 2) + ", " + fmt(d.hingeZ[1] + hg.pair / 2) + ", " + fmt(d.hingeZ[2] + hg.pair / 2) + "; правая — симметрично (отсчёт сверху вниз).",
-    "6. Допуски — IT14, углы острые притупить 0,5; маркировать ЗП-1 краской по тыльной стороне.",
-  ];
-  return (
-    <g>
-      <text x={25} y={14} fontSize={HEAD} fontWeight="bold">
-        З1 — закладная петли
+        Вид изнутри (М 1:10)
       </text>
       <text x={25} y={20} fontSize={TXT}>
-        {"Вид со стороны отгиба створки (М 2:1)"}
+        левая створка
       </text>
-      <rect x={F(0, 0)[0]} y={F(0, 0)[1]} width={em.w * k} height={em.h * k} fill="none" stroke="#000" strokeWidth={THICK} />
-      {[c1, c2].map((v) => (
-        <g key={v}>
-          <circle cx={F(cx, v)[0]} cy={F(cx, v)[1]} r={(holeD * k) / 2} fill="none" stroke="#000" strokeWidth={THICK} />
-          <circle cx={F(cx, v)[0]} cy={F(cx, v)[1]} r={((em.t > 0 ? 6 : 6) * k) / 2} fill="none" stroke="#000" strokeWidth={THIN} strokeDasharray="1.2 0.8" />
-          <line x1={F(cx, v)[0] - 8} y1={F(cx, v)[1]} x2={F(cx, v)[0] + 8} y2={F(cx, v)[1]} stroke="#000" strokeWidth={THIN} strokeDasharray="6 1.5 1 1.5" />
-          <line x1={F(cx, v)[0]} y1={F(cx, v)[1] - 8} x2={F(cx, v)[0]} y2={F(cx, v)[1] + 8} stroke="#000" strokeWidth={THIN} strokeDasharray="6 1.5 1 1.5" />
+      <rect x={X(-2.8)} y={EZ(top)} width={leafW * e} height={f.dh * e} fill="none" stroke="#000" strokeWidth={THICK} />
+      <rect x={X(9.3)} y={EZ(top - f.pt)} width={40 * e} height={stileL * e} fill="url(#hatch)" stroke="#000" strokeWidth={THICK} />
+      <rect x={X(415)} y={EZ(top - f.pt)} width={30 * e} height={stileL * e} fill="url(#hatch)" stroke="#000" strokeWidth={THICK} />
+      {f.levels.map((z) => (
+        <g key={z}>
+          <rect x={X(-2.8)} y={EZ(z + f.pt)} width={leafW * e} height={f.pt * e + 0.3} fill="#000" />
+          <text x={X(445) + 8} y={EZ(z) - 0.5} fontSize={TXT}>
+            {"+" + fmt(Math.round(z * 10) / 10)}
+          </text>
         </g>
       ))}
-      {dim(F(0, em.h), F(em.w, em.h), [0, 8], String(em.w))}
-      {dim(F(em.w, 0), F(em.w, em.h), [14, 0], String(em.h), true)}
-      {dim(F(em.w, c1), F(em.w, c2), [8, 0], String(em.pitch), true)}
-      {dim(F(0, 0), F(0, c1), [-8, 0], fmt(c1), true)}
-      {dim(F(0, c2), F(0, em.h), [-8, 0], fmt(em.h - c2), true)}
-      {dim(F(0, c1), F(cx, c1), [0, -6], fmt(cx))}
-      <text x={F(0, 0)[0]} y={F(0, em.h)[1] + 22} fontSize={TXT}>
-        {"2 отв. " + em.thread + " (⌀" + holeD + " под резьбу)"}
-      </text>
-      {/* Боковой вид: толщина 8. */}
-      <text x={F(0, 0)[0] + 100} y={24} fontSize={HEAD} fontWeight="bold">
-        Боковой вид
-      </text>
-      <rect x={F(0, 0)[0] + 100} y={F(0, 0)[1]} width={em.t * k} height={em.h * k} fill="url(#hatch2)" stroke="#000" strokeWidth={THICK} />
-      {[c1, c2].map((v) => (
-        <line key={v} x1={F(0, 0)[0] + 98} y1={F(0, v)[1]} x2={F(0, 0)[0] + 102 + em.t * k} y2={F(0, v)[1]} stroke="#000" strokeWidth={THIN} strokeDasharray="4 1 1 1" />
+      {/* Петли: корпус 90 × 28,5 по центрам */}
+      {hg.centers.map((c) => (
+        <g key={c}>
+          <rect x={X(0)} y={EZ(c + 45)} width={28.5 * e} height={90 * e} fill="#f0a23a" stroke="#000" strokeWidth={THICK} />
+          <line x1={X(-2.8)} y1={EZ(c)} x2={X(-2.8) - 7} y2={EZ(c)} stroke="#000" strokeWidth={THIN} />
+          <text x={X(-2.8) - 8} y={EZ(c) + 1} fontSize={TXT} textAnchor="end">
+            {"П +" + fmt(c)}
+          </text>
+        </g>
       ))}
-      {dim([F(0, 0)[0] + 100, F(0, em.h)[1]], [F(0, 0)[0] + 100 + em.t * k, F(0, em.h)[1]], [0, 8], String(em.t))}
-      {/* Положение на створке: пластина между стойкой 40×20 и отгибом. */}
-      <text x={205} y={118} fontSize={HEAD} fontWeight="bold">
-        Положение (М 2:1)
+      {dim([X(-2.8), EZ(dz)], [X(-2.8), EZ(top)], [-26, 0], fmt(f.dh), true)}
+      {dim([X(-2.8), EZ(top)], [X(445), EZ(top)], [0, -4], fmt(445 + 2.8))}
+      <text x={X(9.3)} y={EZ(dz) + 8} fontSize={TXT}>
+        Д2
       </text>
-      {(() => {
-        const O: [number, number] = [205, 128], P2 = (x: number, y: number): [number, number] => [O[0] + x * k, O[1] + (y - 92) * k];
-        const hs = d.hingeStile as Pt[];
-        return (
-          <g>
-            <polygon points={hs.map(([x, y]) => P2(x, y).join(",")).join(" ")} fill="#fff" stroke="#000" strokeWidth={THICK} />
-            <rect x={P2(em.x, em.y)[0]} y={P2(em.x, em.y)[1]} width={em.w * k} height={em.t * k} fill="url(#hatch2)" stroke="#000" strokeWidth={THICK} />
-            <rect x={P2(-2.8, 120)[0]} y={P2(0, 120)[1]} width={42.8 * k} height={3 * k} fill="#000" stroke="#000" strokeWidth={THIN} />
-            {pos(P2(20, 116), P2(60, 110), 1)}
-            <text x={P2(0, 92)[0]} y={P2(0, 126)[1]} fontSize={TXT}>
-              СТОЙКА 40×20 — ВЫШЕ, ОТГИБ СТВОРКИ 3 — НИЖЕ
-            </text>
-          </g>
-        );
-      })()}
+      <text x={X(415)} y={EZ(dz) + 8} fontSize={TXT}>
+        Д1
+      </text>
+      <text x={OX} y={18} fontSize={HEAD} fontWeight="bold">
+        Г-Г — план на отметке диафрагмы (М 1:2,8)
+      </text>
+      <polygon points={pts(d.outer)} fill="#000" stroke="#000" strokeWidth={THIN} />
+      <polygon points={pts(d.inner)} fill="#000" stroke="#000" strokeWidth={THIN} />
+      <polygon points={pts(d.diaphragm)} fill="url(#hatch2)" stroke="#000" strokeWidth={THICK} />
+      <polygon points={pts(d.stile)} fill="#fff" stroke="#000" strokeWidth={THICK} />
+      <polygon points={pts(d.hingeStile)} fill="#fff" stroke="#000" strokeWidth={THICK} />
+      {pos(P(420, 25), P(430, 70), 1)}
+      {pos(P(28, 90), P(40, 75), 2)}
+      {pos(P(200, 25), P(210, 70), 3)}
+      <text x={OX} y={OY + 56} fontSize={TXT}>
+        {"1 — Д1, 2 — Д2, 3 — Д3"}
+      </text>
+      <text x={OX} y={110} fontSize={HEAD} fontWeight="bold">
+        Отметки каркаса створки
+      </text>
+      {[
+        ["Диафрагмы Д3 (низ плиты), мм", f.levels.map((z) => "+" + fmt(Math.round(z * 10) / 10)).join("; ")],
+        ["Петли П (центры), мм", hg.centers.map((c) => "+" + fmt(c)).join("; ")],
+        ["Правая створка", "зеркально по x, те же высоты"],
+        ["Зазор над основанием / между створками", hg.gap + " / " + d.gaps.meeting],
+      ].map(([label, v], i) => (
+        <g key={label}>
+          <text x={OX} y={118 + i * 11} fontSize={TXT}>
+            {label}
+          </text>
+          <text x={OX + 4} y={123 + i * 11} fontSize={TXT}>
+            {v}
+          </text>
+        </g>
+      ))}
       <SideText spec={spec} notes={notes} />
-      <Stamp code={code} title={title} height={H} node="З1. Закладная петли" sheet={15} scale="2:1" />
+      <Stamp code={code} title={title} height={H} node="Несущий каркас двери" sheet={15} scale="1:10; 1:2,8" />
     </g>
   );
 }
@@ -1810,20 +1732,20 @@ function HingeSheet({ code, title }: { code: string; title: string }) {
   const V = (u: number, z: number): [number, number] => [195 + u * e, 262 - z * e];
   const spec: [string, string, string, string][] = [
     ["1", "Створка: наружный лист 3, гнутый", "2", "угол R≈130 + прямой участок"],
-    ["2", "Брусок створки, труба 50×50×3", "2", `L=${fmt(dh)}`],
+    ["2", "Брусок створки, труба 50×30×2", "2", `L=${fmt(dh)}`],
     ["3", "Петля Præstmark 995 (995-4-0-4-MP-0), нерж. AISI 304", String(2 * hg.perLeaf), `корпус ${hg.model.L}×${hg.model.w}, ось ⌀${hg.model.pinD} съёмная; ${hg.perLeaf} LH + ${hg.perLeaf} RH`],
-    ["4", "Заклёпка резьбовая М6, бортик, A2", String(4 * hg.perLeaf), `по 2 на петлю (шаг ${hg.pair}) в отв. ⌀9 стойки`],
+    ["4", "Заклёпка резьбовая М6, бортик, A2", String(4 * hg.perLeaf), `по 2 на рамную и 2 на дверную часть (шаг ${hg.pair}), отв. ⌀9, ось x ${hg.boltX} у основной стойки`],
     ["5", "Уголок-вставка нерж. 4", "2", "притвор на стойке"],
     ["6", "Основная стойка, труба 60×60×3", "2", "отв. ⌀9 — как у всех стоек"],
-    ["7", "Стойка створки у петель, труба 40×20×2", "2", "дверная часть петли — на заклёпках М6"],
+    ["7", "Стойка створки у петель, труба 40×20×3", "2", "дверная часть петли — на заклёпках М6 в стенку 3"],
     ["8", "Диафрагма створки −3 (горизонтальная перемычка)", String(2 * (d.bars.length + 2)), "низ, верх, на стыке утеплителя"],
   ];
   const notes = [
-    `1. Ось петель — по «двери.dwg» и «контур дна.dwg» rev3: ${fmt(-ax)} за наружной гранью боковой стены и ${fmt(d.inset - ay)} перед передней гранью основной стойки; створка открывается наружу.`,
-    `2. Петли — на отверстиях ⌀9 № ${hg.holes.map((i) => i + 1).join(", ")} передней грани основной стойки (отметки +${d.hingeZ.map((z) => Math.round(z)).join(", +")}), рамная часть — на резьбовой заклёпке М6; стойки остаются одной деталью.`,
-    `3. Вырезы под корпус петли ${hg.model.L}×${hg.model.w} (запас ≈ 1) и пазы под клипсы — в отгибе створки и уголке-вставке, карман в утеплителе; глубина — не менее ${hg.model.bend} (для шкафов с отгибом ${hg.model.bend}); точные вырезы — по чертежу поставщика.`,
-    `4. Створка: низ — на ${hg.gap} над основанием, верх — на уровне наружных кассет; между створками 4.`,
-    `5. Петля Præstmark 995: ось ⌀${hg.model.pinD} вынимается вверх (над верхней петлёй ≥ ${hg.model.L}), грузоподъёмность — запросить у поставщика; второе отв. ⌀9 (через ${hg.pair}) — во всех стойках, у правых ниже основного.`,
+    `1. Ось петли и сечение корпуса 28,5×24,5 — по «двери+петли.dwg»: ось в x ${fmt(ax)}, y ${fmt(ay)} от переднего левого угла (до наружной грани боковой стены ${fmt(ax + 3)}); корпус вплотную к уголку-вставке (верх y 123) и к стенке стойки у петель (низ y 98,5), винт М6 в x ${hg.boltX}.`,
+    `2. Рамная часть — винты М6 через уголок-вставку и боковой отгиб кассеты в резьбовые заклёпки в стенке основной стойки (по два отв. ⌀9 через ${hg.pair}); центры петель +${hg.centers.join(", +")}; узлы — лист 14.`,
+    "3. Дверная часть — на резьбовых заклёпках М6 в стенке стойки у петель 40×20×3; закладная не нужна. Торец створки закрыт внутренним листом (y 117…118), до уголка-вставки " + d.gaps.hingeSide + ".",
+    `4. Створка: низ — на ${hg.gap} над основанием, верх — на уровне наружных кассет; между створками ${d.gaps.meeting}.`,
+    `5. Петля Præstmark 995: ось ⌀${hg.model.pinD} вынимается вверх (над верхней петлёй ≥ ${hg.model.L}), грузоподъёмность — запросить у поставщика.`,
   ];
   return (
     <g>
@@ -1840,7 +1762,7 @@ function HingeSheet({ code, title }: { code: string; title: string }) {
       <polygon points={pts(clip(d.inner))} fill="#000" stroke="#000" strokeWidth={THIN} />
       {/* Стойка створки у петель 40×20 — в слое утеплителя у оси. */}
       <polygon points={pts(d.hingeStile)} fill="#fff" stroke="#000" strokeWidth={THICK} />
-      <rect x={P(10, 110)[0]} y={P(10, 110)[1]} width={36 * k} height={16 * k} fill="none" stroke="#000" strokeWidth={THIN} />
+      <rect x={P(12.3141, 81.5)[0]} y={P(12.3141, 81.5)[1]} width={34 * k} height={14 * k} fill="none" stroke="#000" strokeWidth={THIN} />
       <polygon points={pts(clip(d.outer))} fill="#000" stroke="#000" strokeWidth={THIN} />
       <line x1={P(230, -12)[0]} y1={P(230, -12)[1]} x2={P(230, 62)[0]} y2={P(230, 62)[1]} stroke="#000" strokeWidth={THIN} strokeDasharray="3 1.5" />
       {/* Открыто на угол чертежа — контур штрихом. */}
@@ -1849,14 +1771,16 @@ function HingeSheet({ code, title }: { code: string; title: string }) {
       <circle cx={P(ax, ay)[0]} cy={P(ax, ay)[1]} r={1.6} fill="none" stroke="#c00" strokeWidth={THICK} />
       <line x1={P(ax - 12, ay)[0]} y1={P(ax - 12, ay)[1]} x2={P(ax + 12, ay)[0]} y2={P(ax + 12, ay)[1]} stroke="#c00" strokeWidth={THIN} />
       <line x1={P(ax, ay - 12)[0]} y1={P(ax, ay - 12)[1]} x2={P(ax, ay + 12)[0]} y2={P(ax, ay + 12)[1]} stroke="#c00" strokeWidth={THIN} />
-      <rect x={P(4, 129)[0]} y={P(4, 129)[1]} width={44 * k} height={34 * k} fill="none" stroke="#c00" strokeWidth={THIN} strokeDasharray="1.5 1" />
-      {dim(P(-3, ay), P(0, ay), [0, 14], fmt(-ax))}
+      <polygon points={pts(d.hingeDwg.bodyPts)} fill="#fff" fillOpacity={0.7} stroke="#c00" strokeWidth={THICK} />
+      <polygon points={pts(d.hingeDwg.head)} fill="#c00" stroke="#c00" strokeWidth={THIN} />
+      <polygon points={pts(d.hingeDwg.shank)} fill="#fff" stroke="#c00" strokeWidth={THIN} />
+      {dim(P(0, ay), P(ax, ay), [0, 14], fmt(ax))}
       {dim(P(T, ay), P(T, d.inset), [10, 0], fmt(d.inset - ay), true)}
       {dim(P(0, d.inset + T), P(T, d.inset + T), [0, -5], String(T))}
       {pos(P(200, -1.5), [P(200, 0)[0] + 6, P(200, 0)[1] + 18], 1)}
       {pos(P(5, d.inset + 30), [36, 60], 6)}
       {pos(P(30, 125), [P(30, 0)[0] - 10, 52], 5)}
-      {pos(P(25, 112), [P(60, 0)[0] + 10, 72], 3)}
+      {pos(P(18, 112), [P(60, 0)[0] + 10, 72], 3)}
       <text x={P(ax, ay)[0] - 20} y={P(ax, ay)[1] + 22} fontSize={TXT}>
         ось петли
       </text>
@@ -1864,7 +1788,7 @@ function HingeSheet({ code, title }: { code: string; title: string }) {
         открыто на {hg.open}° — штрихом
       </text>
       <text x={P(60, -60)[0]} y={P(60, -60)[1] + 9} fontSize={TXT}>
-        корпус петли — зона красным штрихом
+        корпус петли — красным
       </text>
 
       <text x={180} y={16} fontSize={HEAD} fontWeight="bold">
@@ -1879,10 +1803,10 @@ function HingeSheet({ code, title }: { code: string; title: string }) {
         <rect key={`v${u}`} x={V(u, dz + dh)[0]} y={V(u, dz + dh)[1]} width={(u > 20 ? 50 : 40) * e} height={dh * e} fill="none" stroke="#000" strokeWidth={THIN} strokeDasharray="2 1" />
       ))}
       {d.hingeZ.map((z) => (
-        <rect key={z} x={V(0, z + 50)[0]} y={V(0, z + 50)[1]} width={40 * e} height={100 * e} fill="#c00" />
+        <rect key={z} x={V(0, z + hg.pair / 2 + 45)[0]} y={V(0, z + hg.pair / 2 + 45)[1]} width={28.5 * e} height={90 * e} fill="#c00" />
       ))}
       {pos(V(leaf / 2, d.bars[0] ?? dz), [V(leaf, 0)[0] + 16, V(0, (d.bars[0] ?? dz) + 150)[1]], 8)}
-      {[0, ...d.hingeZ.map((z) => z - dz), dh].slice(1).map((v, i, arr) => {
+      {[0, ...d.hingeZ.map((z) => z + hg.pair / 2 - dz), dh].slice(1).map((v, i, arr) => {
         const from = i ? arr[i - 1] : 0;
         return <g key={i}>{dim(V(0, dz + from), V(0, dz + v), [-6, 0], String(Math.round(v - from)), true)}</g>;
       })}
@@ -1891,7 +1815,7 @@ function HingeSheet({ code, title }: { code: string; title: string }) {
       <text x={V(0, dz + dh)[0]} y={V(0, dz + dh)[1] - 3} fontSize={TXT}>
         у петель — слева
       </text>
-      {pos(V(20, d.hingeZ[1]), [V(leaf, 0)[0] + 16, V(0, d.hingeZ[1])[1]], 3)}
+      {pos(V(20, d.hingeZ[1] + hg.pair / 2), [V(leaf, 0)[0] + 16, V(0, d.hingeZ[1])[1]], 3)}
 
       <SideText spec={spec} notes={notes} />
       <Stamp code={code} title={title} height={H} node="Дверь. Узел скрытой петли" sheet={12} scale="1:2,5; 1:20" />
@@ -2401,8 +2325,7 @@ ${new XMLSerializer().serializeToString(copy)}`;
         {sheet === 12 && <HingeSheet code={code} title={title} />}
         {sheet === 13 && <JointSheet code={code} title={title} />}
         {sheet === 14 && <HingeCutSheet code={code} title={title} />}
-        {sheet === 15 && <EmbedSheet code={code} title={title} />}
-        {sheet === 16 && <EmbedIsoSheet code={code} title={title} />}
+        {sheet === 15 && <DoorFrameSheet code={code} title={title} />}
       </svg>
     </div>
   );

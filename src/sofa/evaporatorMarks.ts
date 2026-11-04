@@ -29,7 +29,7 @@ export interface FrameMark {
 }
 
 /** Материалы несущего каркаса (обшивка, кассеты и полосы-вставки — не каркас). */
-export const FRAME_MATERIALS = ["ch10", "ch8", "tube60", "tube50", "an50", "rd50", "s8", "s3"];
+export const FRAME_MATERIALS = ["ch10", "ch8", "tube60", "tube5030", "an50", "rd50", "s8", "s3"];
 
 const RULES: [RegExp, string, MarkKind, string, number][] = [
   [/^base-(front|back)$/, "Ш1", "channel", "Швеллер основания 10П", 4],
