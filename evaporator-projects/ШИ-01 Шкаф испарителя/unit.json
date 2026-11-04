@@ -1404,65 +1404,9 @@
         }
       ]
     },
-    "istrip-bl-1": {
-      "no": "ШИ-01-М-069",
-      "partId": "istrip-bl-1",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1793626486831,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "istrip-bl-2": {
-      "no": "ШИ-01-М-070",
-      "partId": "istrip-bl-2",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1793626486831,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
     "icas-br": {
       "no": "ШИ-01-М-088",
       "partId": "icas-br",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1793626486831,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "istrip-br-1": {
-      "no": "ШИ-01-М-089",
-      "partId": "istrip-br-1",
-      "status": "none",
-      "rev": 0,
-      "history": [
-        {
-          "at": 1793626486831,
-          "status": "none",
-          "rev": 0,
-          "comment": "Деталь добавлена в модель серии"
-        }
-      ]
-    },
-    "istrip-br-2": {
-      "no": "ШИ-01-М-090",
-      "partId": "istrip-br-2",
       "status": "none",
       "rev": 0,
       "history": [
@@ -1790,6 +1734,202 @@
       "history": [
         {
           "at": 1793628976838,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "ibase-bl-1": {
+      "no": "ШИ-01-М-039",
+      "partId": "ibase-bl-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793665834311,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "icover-bl-1": {
+      "no": "ШИ-01-М-040",
+      "partId": "icover-bl-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793665834311,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "ibase-bl-2": {
+      "no": "ШИ-01-М-041",
+      "partId": "ibase-bl-2",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793665834311,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "icover-bl-2": {
+      "no": "ШИ-01-М-042",
+      "partId": "icover-bl-2",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793665834311,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "ibase-br-1": {
+      "no": "ШИ-01-М-061",
+      "partId": "ibase-br-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793665834311,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "icover-br-1": {
+      "no": "ШИ-01-М-062",
+      "partId": "icover-br-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793665834311,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "ibase-br-2": {
+      "no": "ШИ-01-М-063",
+      "partId": "ibase-br-2",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793665834311,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "icover-br-2": {
+      "no": "ШИ-01-М-064",
+      "partId": "icover-br-2",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793665834311,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-embed-l-1": {
+      "no": "ШИ-01-М-072",
+      "partId": "door-embed-l-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793712845472,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-embed-l-2": {
+      "no": "ШИ-01-М-073",
+      "partId": "door-embed-l-2",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793712845472,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-embed-l-3": {
+      "no": "ШИ-01-М-074",
+      "partId": "door-embed-l-3",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793712845472,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-embed-r-1": {
+      "no": "ШИ-01-М-083",
+      "partId": "door-embed-r-1",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793712845472,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-embed-r-2": {
+      "no": "ШИ-01-М-084",
+      "partId": "door-embed-r-2",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793712845472,
+          "status": "none",
+          "rev": 0,
+          "comment": "Деталь добавлена в модель серии"
+        }
+      ]
+    },
+    "door-embed-r-3": {
+      "no": "ШИ-01-М-085",
+      "partId": "door-embed-r-3",
+      "status": "none",
+      "rev": 0,
+      "history": [
+        {
+          "at": 1793712845472,
           "status": "none",
           "rev": 0,
           "comment": "Деталь добавлена в модель серии"
